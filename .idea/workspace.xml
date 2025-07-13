@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="13102274-7f3e-4ae3-b397-80962da4df28" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Trainee.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Trainer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Training.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/TrainingType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/storage/Storage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -71,7 +67,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752402318942</updated>
       <workItem from="1752402319949" duration="18000" />
-      <workItem from="1752402544496" duration="2023000" />
+      <workItem from="1752402544496" duration="3037000" />
     </task>
     <servers />
   </component>
