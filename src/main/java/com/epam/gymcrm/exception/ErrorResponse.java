@@ -1,17 +1,27 @@
 package com.epam.gymcrm.exception;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ErrorResponse {
     private int status;
     private String error;
     private String message;
+    private List<String> details;
     private LocalDateTime timestamp;
 
     public ErrorResponse(int status, String error, String message, LocalDateTime timestamp) {
         this.status = status;
         this.error = error;
         this.message = message;
+        this.timestamp = timestamp;
+    }
+
+    public ErrorResponse(int status, String error, String message, List<String> details, LocalDateTime timestamp) {
+        this.status = status;
+        this.error = error;
+        this.message = message;
+        this.details = details;
         this.timestamp = timestamp;
     }
 
@@ -37,6 +47,14 @@ public class ErrorResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public List<String> getDetails() {
+        return details;
+    }
+
+    public void setDetails(List<String> details) {
+        this.details = details;
     }
 
     public LocalDateTime getTimestamp() {
