@@ -5,14 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="13102274-7f3e-4ae3-b397-80962da4df28" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Trainee.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Trainer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/Training.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/TrainingType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/domain/User.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -31,7 +41,7 @@
     "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/tutku/Documents/epam-java-specialization/task_3-git/gym-crm",
@@ -61,7 +71,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752402318942</updated>
       <workItem from="1752402319949" duration="18000" />
-      <workItem from="1752402544496" duration="408000" />
+      <workItem from="1752402544496" duration="2023000" />
     </task>
     <servers />
   </component>
