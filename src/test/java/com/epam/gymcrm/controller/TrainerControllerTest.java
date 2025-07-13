@@ -40,12 +40,14 @@ class TrainerControllerTest {
         TrainerDto request = new TrainerDto();
         request.setFirstName("Ali");
         request.setLastName("Veli");
+        request.setSpecialization("Fitness");
 
         TrainerDto response = new TrainerDto();
         response.setId(10L);
         response.setFirstName("Ali");
         response.setLastName("Veli");
         response.setUsername("Ali.Veli");
+        response.setSpecialization("Fitness");
 
         when(trainerService.createTrainer(any(TrainerDto.class))).thenReturn(response);
 
@@ -94,6 +96,7 @@ class TrainerControllerTest {
         TrainerDto request = new TrainerDto();
         request.setFirstName("Updated");
         request.setLastName("Trainer");
+        request.setSpecialization("Fitness");
 
         doNothing().when(trainerService).update(any(TrainerDto.class));
 

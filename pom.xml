@@ -21,12 +21,6 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.framework.version>6.2.8</spring.framework.version>
-        <slf4j.api.version>2.0.17</slf4j.api.version>
-        <logback-classic.version>1.4.14</logback-classic.version>
-        <junit-jupiter.version>5.12.2</junit-jupiter.version>
-        <apache.commons-lang3.version>3.17.0</apache.commons-lang3.version>
-        <fasterxml.jackson.version>2.17.1</fasterxml.jackson.version>
     </properties>
 
     <dependencies>
@@ -37,6 +31,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>

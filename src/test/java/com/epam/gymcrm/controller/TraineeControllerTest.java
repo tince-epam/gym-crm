@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -41,12 +42,16 @@ class TraineeControllerTest {
         TraineeDto request = new TraineeDto();
         request.setFirstName("John");
         request.setLastName("Doe");
+        request.setDateOfBirth("1990-01-01");
+        request.setAddress("Some Address");
 
         TraineeDto response = new TraineeDto();
         response.setId(1L);
         response.setFirstName("John");
         response.setLastName("Doe");
         response.setUsername("John.Doe");
+        response.setDateOfBirth("1990-01-01");
+        response.setAddress("Some Address");
 
         when(traineeService.createTrainee(any(TraineeDto.class))).thenReturn(response);
 
@@ -93,6 +98,8 @@ class TraineeControllerTest {
         TraineeDto request = new TraineeDto();
         request.setFirstName("Updated");
         request.setLastName("User");
+        request.setDateOfBirth("1990-01-01");
+        request.setAddress("Some Address");
 
         doNothing().when(traineeService).update(any(TraineeDto.class));
 
@@ -118,5 +125,22 @@ class TraineeControllerTest {
         mockMvc.perform(get("/api/v1/trainees/" + notFoundId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Trainee not found with id: " + notFoundId));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenValidationFails() throws Exception {
+        TraineeDto invalidRequest = new TraineeDto();
+        invalidRequest.setFirstName("John"); // diğer zorunlu alanlar boş
+
+        mockMvc.perform(post("/api/v1/trainees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Validation Error"))
+                .andExpect(jsonPath("$.details", hasItem("lastName: Last name is required")))
+                .andExpect(jsonPath("$.details", hasItem("dateOfBirth: Date of birth is required")))
+                .andExpect(jsonPath("$.details", hasItem("address: Address is required")));
     }
 }

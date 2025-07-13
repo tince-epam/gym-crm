@@ -90,6 +90,11 @@ class TrainingControllerTest {
     void shouldUpdateTraining() throws Exception {
         TrainingDto request = new TrainingDto();
         request.setTrainingName("Updated Training");
+        request.setTrainerId(2L);
+        request.setTraineeId(3L);
+        request.setTrainingTypeId(1L);
+        request.setTrainingDate(LocalDateTime.of(2025, 7, 15, 13, 30));
+        request.setTrainingDuration(60);
 
         doNothing().when(trainingService).update(any(TrainingDto.class));
 

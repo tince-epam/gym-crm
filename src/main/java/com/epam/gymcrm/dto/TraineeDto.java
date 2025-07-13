@@ -2,14 +2,17 @@ package com.epam.gymcrm.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 
 public class TraineeDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -18,8 +21,10 @@ public class TraineeDto {
     private Boolean isActive;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotBlank(message = "Date of birth is required")
     private String dateOfBirth;
 
+    @NotBlank(message = "Address is required")
     private String address;
 
     public Long getId() {

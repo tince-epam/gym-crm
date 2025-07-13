@@ -2,6 +2,7 @@ package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.service.TrainerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class TrainerController {
     }
 
     @PostMapping
-    public ResponseEntity<TrainerDto> createTrainer(@RequestBody TrainerDto trainerDto) {
+    public ResponseEntity<TrainerDto> createTrainer(@RequestBody @Valid TrainerDto trainerDto) {
         return new ResponseEntity<>(trainerService.createTrainer(trainerDto), HttpStatus.CREATED);
     }
 
@@ -34,7 +35,7 @@ public class TrainerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTrainer(@PathVariable Long id, @RequestBody TrainerDto trainerDto) {
+    public ResponseEntity<Void> updateTrainer(@PathVariable Long id, @RequestBody @Valid TrainerDto trainerDto) {
         trainerDto.setId(id);
         trainerService.update(trainerDto);
         return ResponseEntity.noContent().build();
