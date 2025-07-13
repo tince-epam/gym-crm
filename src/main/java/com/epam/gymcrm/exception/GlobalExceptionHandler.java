@@ -14,7 +14,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTraineeNotFound(TraineeNotFoundException ex) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "Not Found",
+                "Trainee Not Found",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(TrainerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTrainerNotFound(TrainerNotFoundException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Trainer Not Found",
                 ex.getMessage(),
                 LocalDateTime.now()
         );
