@@ -5,7 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="13102274-7f3e-4ae3-b397-80962da4df28" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/storage/Storage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/CrudDao.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/TraineeDao.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/TrainerDao.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/TrainingDao.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/TrainingTypeDao.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/impl/TraineeDaoImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/impl/TrainerDaoImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/impl/TrainingDaoImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/epam/gymcrm/dao/impl/TrainingTypeDaoImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -16,6 +24,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -67,7 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752402318942</updated>
       <workItem from="1752402319949" duration="18000" />
-      <workItem from="1752402544496" duration="3037000" />
+      <workItem from="1752402544496" duration="3975000" />
     </task>
     <servers />
   </component>
