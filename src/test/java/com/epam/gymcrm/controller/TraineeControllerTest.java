@@ -1,6 +1,7 @@
 package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.service.TraineeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -107,5 +108,15 @@ class TraineeControllerTest {
 
         mockMvc.perform(delete("/api/v1/trainees/3"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldReturnNotFoundAndErrorResponseWhenTraineeNotFound() throws Exception {
+        Long notFoundId = 999L;
+        when(traineeService.findById(notFoundId)).thenThrow(new TraineeNotFoundException("Trainee not found with id: " + notFoundId));
+
+        mockMvc.perform(get("/api/v1/trainees/" + notFoundId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Trainee not found with id: " + notFoundId));
     }
 }
