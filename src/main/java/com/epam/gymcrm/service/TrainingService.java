@@ -106,17 +106,17 @@ public class TrainingService {
                 });
 
         // Trainer existence
-        if (dto.getTrainerId() != null && trainerDao.findById(dto.getTrainerId()).isEmpty()) {
+        if (!Objects.isNull(dto.getTrainerId()) && trainerDao.findById(dto.getTrainerId()).isEmpty()) {
             logger.warn("Trainer not found for update operation with id: {}", dto.getTrainerId());
             throw new TrainerNotFoundException("Trainer not found for update operation with id: " + dto.getTrainerId());
         }
         // Trainee existence
-        if (dto.getTraineeId() != null && traineeDao.findById(dto.getTraineeId()).isEmpty()) {
+        if (!Objects.isNull(dto.getTraineeId()) && traineeDao.findById(dto.getTraineeId()).isEmpty()) {
             logger.warn("Trainee not found for update operation with id: {}", dto.getTraineeId());
             throw new TraineeNotFoundException("Trainee not found for update operation with id: " + dto.getTraineeId());
         }
         // TrainingType existence
-        if (dto.getTrainingTypeId() != null && trainingTypeDao.findById(dto.getTrainingTypeId()).isEmpty()) {
+        if (!Objects.isNull(dto.getTrainingTypeId()) && trainingTypeDao.findById(dto.getTrainingTypeId()).isEmpty()) {
             logger.warn("TrainingType not found for update operation with id: {}", dto.getTrainingTypeId());
             throw new TrainingTypeNotFoundException("TrainingType not found for update operation with id: " + dto.getTrainingTypeId());
         }
