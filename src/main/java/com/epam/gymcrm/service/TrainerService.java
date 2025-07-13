@@ -8,10 +8,12 @@ import com.epam.gymcrm.mapper.TrainerMapper;
 import com.epam.gymcrm.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class TrainerService {
 
     private final TrainerDao trainerDao;
