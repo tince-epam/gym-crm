@@ -2,6 +2,7 @@ package com.epam.gymcrm.service;
 
 import com.epam.gymcrm.dao.TrainerDao;
 import com.epam.gymcrm.domain.Trainer;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -32,16 +34,19 @@ public class TrainerService {
         // Set Id
         trainer.setId(trainerIdSequence.getAndIncrement());
 
-        // Generate unique username
-        trainer.setUsername(generateUsername(trainer));
+        User user = new User();
+        user.setFirstName(trainerDto.getFirstName());
+        user.setLastName(trainerDto.getLastName());
+        user.setUsername(generateUsername(user));
+        user.setPassword(UserUtils.generateRandomPassword());
+        user.setActive(true);
 
-        // Generate password
-        trainer.setPassword(UserUtils.generateRandomPassword());
-        trainer.setActive(true);
+        trainer.setUser(user);
 
+        // Save
         Trainer savedTrainer = trainerDao.save(trainer);
 
-        logger.info("Trainer created: id={}, username={}", trainer.getId(), trainer.getUsername());
+        logger.info("Trainer created: id={}, username={}", trainer.getId(), user.getUsername());
         return TrainerMapper.toTrainerDto(savedTrainer);
     }
 
@@ -52,7 +57,7 @@ public class TrainerService {
                     logger.warn("Trainer not found for id: {}", id);
                     return new TrainerNotFoundException("Trainer not found with id: " + id);
                 });
-        logger.info("Trainer found: id={}, username={}", trainer.getId(), trainer.getUsername());
+        logger.info("Trainer found: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
         return TrainerMapper.toTrainerDto(trainer);
     }
 
@@ -78,30 +83,30 @@ public class TrainerService {
                     return new TrainerNotFoundException("Trainer not found with id: " + id);
                 });
 
-        logger.info("Updating trainer: id={}, username={}", id, trainer.getUsername());
+        logger.info("Updating trainer: id={}, username={}", id, trainer.getUser().getUsername());
 
-        if (trainerDto.getFirstName() != null) trainer.setFirstName(trainerDto.getFirstName());
-        if (trainerDto.getLastName() != null) trainer.setLastName(trainerDto.getLastName());
-        if (trainerDto.getActive() != null) trainer.setActive(trainerDto.getActive());
+        if (!Objects.isNull(trainerDto.getFirstName())) trainer.getUser().setFirstName(trainerDto.getFirstName());
+        if (!Objects.isNull(trainerDto.getLastName())) trainer.getUser().setLastName(trainerDto.getLastName());
+        if (!Objects.isNull(trainerDto.getActive())) trainer.getUser().setActive(trainerDto.getActive());
+
         if (trainerDto.getSpecialization() != null) trainer.setSpecialization(trainerDto.getSpecialization());
 
-
-        String updatedUsername = generateUsername(trainer);
-        if (!updatedUsername.equals(trainer.getUsername())) {
-            trainer.setUsername(updatedUsername);
+        String updatedUsername = generateUsername(trainer.getUser());
+        if (!updatedUsername.equals(trainer.getUser().getUsername())) {
+            trainer.getUser().setUsername(updatedUsername);
         }
 
         trainerDao.update(trainer);
 
-        logger.info("Trainer updated: id={}, username={}", trainer.getId(), trainer.getUsername());
+        logger.info("Trainer updated: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
     }
 
     // Unique username generation
-    private String generateUsername(Trainer trainer) {
+    private String generateUsername(User user) {
         List<String> existingUsernames = trainerDao.findAll()
                 .stream()
-                .map(Trainer::getUsername)
+                .map(trainer -> trainer.getUser().getUsername())
                 .toList();
-        return UserUtils.generateUniqueUsername(trainer.getFirstName(), trainer.getLastName(), existingUsernames);
+        return UserUtils.generateUniqueUsername(user.getFirstName(), user.getLastName(), existingUsernames);
     }
 }

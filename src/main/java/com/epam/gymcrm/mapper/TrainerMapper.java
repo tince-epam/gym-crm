@@ -1,33 +1,42 @@
 package com.epam.gymcrm.mapper;
 
 import com.epam.gymcrm.domain.Trainer;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 
-import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class TrainerMapper {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     public static Trainer toTrainer(TrainerDto trainerDto) {
+        if (Objects.isNull(trainerDto))
+            return null;
+
         Trainer trainer = new Trainer();
         trainer.setId(trainerDto.getId());
-        trainer.setFirstName(trainerDto.getFirstName());
-        trainer.setLastName(trainerDto.getLastName());
-        trainer.setUsername(trainerDto.getUsername());
-        trainer.setActive(trainerDto.getActive());
+
+        User user = new User();
+        user.setFirstName(trainerDto.getFirstName());
+        user.setLastName(trainerDto.getLastName());
+        user.setUsername(trainerDto.getUsername());
+        user.setActive(trainerDto.getActive());
+
+        trainer.setUser(user);
         trainer.setSpecialization(trainerDto.getSpecialization());
 
         return trainer;
     }
 
     public static TrainerDto toTrainerDto(Trainer trainer) {
+        if (Objects.isNull(trainer) || Objects.isNull(trainer.getUser()))
+            return null;
+
         TrainerDto trainerDto = new TrainerDto();
         trainerDto.setId(trainer.getId());
-        trainerDto.setFirstName(trainer.getFirstName());
-        trainerDto.setLastName(trainer.getLastName());
-        trainerDto.setUsername(trainer.getUsername());
-        trainerDto.setActive(trainer.getActive());
+        trainerDto.setFirstName(trainer.getUser().getFirstName());
+        trainerDto.setLastName(trainer.getUser().getLastName());
+        trainerDto.setUsername(trainer.getUser().getUsername());
+        trainerDto.setActive(trainer.getUser().getActive());
         trainerDto.setSpecialization(trainer.getSpecialization());
 
         return trainerDto;

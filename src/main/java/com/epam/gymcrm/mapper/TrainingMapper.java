@@ -3,7 +3,6 @@ package com.epam.gymcrm.mapper;
 import com.epam.gymcrm.domain.Training;
 import com.epam.gymcrm.dto.TrainingDto;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class TrainingMapper {

@@ -2,22 +2,13 @@ package com.epam.gymcrm.domain;
 
 import java.util.Objects;
 
-public abstract class User {
+public class User {
 
-    private Long id;
     private String firstName;
     private String lastName;
     private String username;
     private String password;
     private Boolean isActive;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getFirstName() {
         return firstName;
@@ -64,11 +55,11 @@ public abstract class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id);
+        return Objects.equals(username, user.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(username);
     }
 }

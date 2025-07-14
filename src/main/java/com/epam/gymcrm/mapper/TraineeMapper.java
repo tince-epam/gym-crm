@@ -1,6 +1,7 @@
 package com.epam.gymcrm.mapper;
 
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 
 import java.time.LocalDate;
@@ -11,17 +12,17 @@ public class TraineeMapper {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static TraineeDto toTraineeDto(Trainee trainee) {
-        if (Objects.isNull(trainee))
+        if (Objects.isNull(trainee) || Objects.isNull(trainee.getUser()))
             return null;
 
         TraineeDto dto = new TraineeDto();
         dto.setId(trainee.getId());
-        dto.setFirstName(trainee.getFirstName());
-        dto.setLastName(trainee.getLastName());
-        dto.setUsername(trainee.getUsername());
-        dto.setActive(trainee.getActive());
+        dto.setFirstName(trainee.getUser().getFirstName());
+        dto.setLastName(trainee.getUser().getLastName());
+        dto.setUsername(trainee.getUser().getUsername());
+        dto.setActive(trainee.getUser().getActive());
         dto.setDateOfBirth(
-                !Objects.isNull(trainee.getDateOfBirth()) ? trainee.getDateOfBirth().format(FORMATTER) : null
+                trainee.getDateOfBirth() != null ? trainee.getDateOfBirth().format(FORMATTER) : null
         );
         dto.setAddress(trainee.getAddress());
 
@@ -34,11 +35,16 @@ public class TraineeMapper {
 
         Trainee trainee = new Trainee();
         trainee.setId(traineeDto.getId());
-        trainee.setFirstName(traineeDto.getFirstName());
-        trainee.setLastName(traineeDto.getLastName());
-        trainee.setUsername(traineeDto.getUsername());
-        trainee.setActive(traineeDto.getActive());
-        if (!Objects.isNull(traineeDto.getDateOfBirth()) && !traineeDto.getDateOfBirth().isBlank()) {
+
+        User user = new User();
+        user.setFirstName(traineeDto.getFirstName());
+        user.setLastName(traineeDto.getLastName());
+        user.setUsername(traineeDto.getUsername());
+        user.setActive(traineeDto.getActive());
+
+        trainee.setUser(user);
+
+        if (traineeDto.getDateOfBirth() != null && !traineeDto.getDateOfBirth().isBlank()) {
             trainee.setDateOfBirth(LocalDate.parse(traineeDto.getDateOfBirth(), FORMATTER));
         }
         trainee.setAddress(traineeDto.getAddress());

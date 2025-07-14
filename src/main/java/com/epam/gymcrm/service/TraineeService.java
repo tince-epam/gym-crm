@@ -2,6 +2,7 @@ package com.epam.gymcrm.service;
 
 import com.epam.gymcrm.dao.TraineeDao;
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -30,20 +32,21 @@ public class TraineeService {
         logger.info("Creating new trainee: {} {}", traineeDto.getFirstName(), traineeDto.getLastName());
         Trainee trainee = TraineeMapper.toTrainee(traineeDto);
 
-        // Set Id
         trainee.setId(traineeIdSequence.getAndIncrement());
 
-        // Generate unique username
-        trainee.setUsername(generateUsername(trainee));
+        User user = new User();
+        user.setFirstName(traineeDto.getFirstName());
+        user.setLastName(traineeDto.getLastName());
+        user.setUsername(generateUsername(user));
+        user.setPassword(UserUtils.generateRandomPassword());
+        user.setActive(true);
 
-        // Generate password
-        trainee.setPassword(UserUtils.generateRandomPassword());
-        trainee.setActive(true);
+        trainee.setUser(user);
 
         // Save with DAO
         Trainee savedTrainee = traineeDao.save(trainee);
 
-        logger.info("Trainee created: id={}, username={}", trainee.getId(), trainee.getUsername());
+        logger.info("Trainee created: id={}, username={}", trainee.getId(), user.getUsername());
         return TraineeMapper.toTraineeDto(savedTrainee);
     }
 
@@ -54,7 +57,7 @@ public class TraineeService {
                     logger.warn("Trainee not found for id: {}", id);
                     return new TraineeNotFoundException("Trainee not found with id: " + id);
                 });
-        logger.info("Trainee found: id={}, username={}", trainee.getId(), trainee.getUsername());
+        logger.info("Trainee found: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
         return TraineeMapper.toTraineeDto(trainee);
     }
 
@@ -80,30 +83,32 @@ public class TraineeService {
                     return new TraineeNotFoundException("Trainee not found with id: " + id);
                 });
 
-        logger.info("Updating trainee: id={}, username={}", id, trainee.getUsername());
+        logger.info("Updating trainee: id={}, username={}", id, trainee.getUser().getUsername());
 
-        if (traineeDto.getFirstName() != null) trainee.setFirstName(traineeDto.getFirstName());
-        if (traineeDto.getLastName() != null) trainee.setLastName(traineeDto.getLastName());
-        if (traineeDto.getActive() != null) trainee.setActive(traineeDto.getActive());
-        if (traineeDto.getDateOfBirth() != null) trainee.setDateOfBirth(LocalDate.parse(traineeDto.getDateOfBirth()));
-        if (traineeDto.getAddress() != null) trainee.setAddress(traineeDto.getAddress());
+        if (!Objects.isNull(traineeDto.getFirstName())) trainee.getUser().setFirstName(traineeDto.getFirstName());
+        if (!Objects.isNull(traineeDto.getLastName())) trainee.getUser().setLastName(traineeDto.getLastName());
+        if (!Objects.isNull(traineeDto.getActive())) trainee.getUser().setActive(traineeDto.getActive());
 
-        String updatedUsername = generateUsername(trainee);
-        if (!updatedUsername.equals(trainee.getUsername())) {
-            trainee.setUsername(updatedUsername);
+        if (!Objects.isNull(traineeDto.getDateOfBirth()))
+            trainee.setDateOfBirth(LocalDate.parse(traineeDto.getDateOfBirth()));
+        if (!Objects.isNull(traineeDto.getAddress())) trainee.setAddress(traineeDto.getAddress());
+
+        String updatedUsername = generateUsername(trainee.getUser());
+        if (!updatedUsername.equals(trainee.getUser().getUsername())) {
+            trainee.getUser().setUsername(updatedUsername);
         }
 
         traineeDao.update(trainee);
 
-        logger.info("Trainee updated: id={}, username={}", trainee.getId(), trainee.getUsername());
+        logger.info("Trainee updated: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
     }
 
-    private String generateUsername(Trainee trainee) {
+    private String generateUsername(User user) {
         List<String> existingUsernames = traineeDao.findAll()
                 .stream()
-                .map(Trainee::getUsername)
+                .map(trainee -> trainee.getUser().getUsername())
                 .toList();
 
-        return UserUtils.generateUniqueUsername(trainee.getFirstName(), trainee.getLastName(), existingUsernames);
+        return UserUtils.generateUniqueUsername(user.getFirstName(), user.getLastName(), existingUsernames);
     }
 }
