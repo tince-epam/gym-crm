@@ -2,6 +2,7 @@ package com.epam.gymcrm.service;
 
 import com.epam.gymcrm.dao.TrainerDao;
 import com.epam.gymcrm.domain.Trainer;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
@@ -37,9 +38,13 @@ class TrainerServiceTest {
 
         Trainer trainer = TrainerMapper.toTrainer(dto);
         trainer.setId(1L);
-        trainer.setUsername("Mehmet.Yılmaz");
-        trainer.setPassword("password123");
-        trainer.setActive(true);
+        User user = new User();
+        user.setFirstName("Mehmet");
+        user.setLastName("Yılmaz");
+        user.setUsername("Mehmet.Yılmaz");
+        user.setPassword("password123");
+        user.setActive(true);
+        trainer.setUser(user);
 
         when(trainerDao.save(any(Trainer.class))).thenReturn(trainer);
 
@@ -53,14 +58,17 @@ class TrainerServiceTest {
         verify(trainerDao, times(1)).save(any(Trainer.class));
     }
 
+
     @Test
     void shouldFindTrainerById() {
         // Arrange
         Trainer trainer = new Trainer();
         trainer.setId(1L);
-        trainer.setFirstName("Mehmet");
-        trainer.setLastName("Yılmaz");
-        trainer.setUsername("Mehmet.Yılmaz");
+        User user = new User();
+        user.setFirstName("Mehmet");
+        user.setLastName("Yılmaz");
+        user.setUsername("Mehmet.Yılmaz");
+        trainer.setUser(user);
 
         when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
 
@@ -71,8 +79,10 @@ class TrainerServiceTest {
         assertNotNull(result);
         assertEquals("Mehmet", result.getFirstName());
         assertEquals("Yılmaz", result.getLastName());
+        assertEquals("Mehmet.Yılmaz", result.getUsername());
         verify(trainerDao, times(1)).findById(1L);
     }
+
 
     @Test
     void shouldThrowExceptionWhenTrainerNotFound() {
@@ -89,7 +99,10 @@ class TrainerServiceTest {
         // Arrange
         Trainer trainer = new Trainer();
         trainer.setId(1L);
-        trainer.setFirstName("Mehmet");
+        User user = new User();
+        user.setFirstName("Mehmet");
+        trainer.setUser(user);
+
         when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
         doNothing().when(trainerDao).deleteById(1L);
 
@@ -100,16 +113,19 @@ class TrainerServiceTest {
         verify(trainerDao, times(1)).deleteById(1L);
     }
 
+
     @Test
     void shouldUpdateTrainer() {
         // Arrange
         Trainer existing = new Trainer();
         existing.setId(1L);
-        existing.setFirstName("Mehmet");
-        existing.setLastName("Yılmaz");
-        existing.setUsername("Mehmet.Yılmaz");
+        User user = new User();
+        user.setFirstName("Mehmet");
+        user.setLastName("Yılmaz");
+        user.setUsername("Mehmet.Yılmaz");
+        user.setActive(true);
+        existing.setUser(user);
         existing.setSpecialization("Fitness");
-        existing.setActive(true);
 
         TrainerDto updateDto = new TrainerDto();
         updateDto.setId(1L);
@@ -128,6 +144,7 @@ class TrainerServiceTest {
         verify(trainerDao, times(1)).findById(1L);
         verify(trainerDao, times(1)).update(any(Trainer.class));
     }
+
 
     @Test
     void shouldThrowExceptionWhenUpdateTrainerNotFound() {
@@ -148,15 +165,19 @@ class TrainerServiceTest {
         // Arrange
         Trainer t1 = new Trainer();
         t1.setId(1L);
-        t1.setFirstName("Mehmet");
-        t1.setLastName("Yılmaz");
-        t1.setUsername("Mehmet.Yılmaz");
+        User user1 = new User();
+        user1.setFirstName("Mehmet");
+        user1.setLastName("Yılmaz");
+        user1.setUsername("Mehmet.Yılmaz");
+        t1.setUser(user1);
 
         Trainer t2 = new Trainer();
         t2.setId(2L);
-        t2.setFirstName("Ayşe");
-        t2.setLastName("Kaya");
-        t2.setUsername("Ayşe.Kaya");
+        User user2 = new User();
+        user2.setFirstName("Ayşe");
+        user2.setLastName("Kaya");
+        user2.setUsername("Ayşe.Kaya");
+        t2.setUser(user2);
 
         List<Trainer> trainers = List.of(t1, t2);
         when(trainerDao.findAll()).thenReturn(trainers);
@@ -169,6 +190,9 @@ class TrainerServiceTest {
         assertEquals(2, result.size());
         assertEquals("Mehmet", result.get(0).getFirstName());
         assertEquals("Ayşe", result.get(1).getFirstName());
+        assertEquals("Mehmet.Yılmaz", result.get(0).getUsername());
+        assertEquals("Ayşe.Kaya", result.get(1).getUsername());
         verify(trainerDao, times(1)).findAll();
     }
+
 }

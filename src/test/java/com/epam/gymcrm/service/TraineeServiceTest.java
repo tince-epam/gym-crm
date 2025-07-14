@@ -2,6 +2,7 @@ package com.epam.gymcrm.service;
 
 import com.epam.gymcrm.dao.TraineeDao;
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
@@ -39,9 +40,13 @@ class TraineeServiceTest {
 
         Trainee trainee = TraineeMapper.toTrainee(traineeDto);
         trainee.setId(1L);
-        trainee.setUsername("Ali.Veli");
-        trainee.setPassword("password123");
-        trainee.setActive(true);
+        User user = new User();
+        user.setFirstName("Ali");
+        user.setLastName("Veli");
+        user.setUsername("Ali.Veli");
+        user.setPassword("password123");
+        user.setActive(true);
+        trainee.setUser(user);
 
         when(traineeDao.save(any(Trainee.class))).thenReturn(trainee);
 
@@ -52,6 +57,7 @@ class TraineeServiceTest {
         assertNotNull(result);
         assertEquals("Ali", result.getFirstName());
         assertEquals("Veli", result.getLastName());
+        assertEquals("Ali.Veli", result.getUsername()); // Username assert’i
         verify(traineeDao, times(1)).save(any(Trainee.class));
     }
 
@@ -60,14 +66,15 @@ class TraineeServiceTest {
         // Arrange
         Trainee existing = new Trainee();
         existing.setId(1L);
-        existing.setFirstName("Ali");
-        existing.setLastName("Veli");
-        existing.setUsername("Ali.Veli");
-        existing.setActive(true);
+        User user = new User();
+        user.setFirstName("Ali");
+        user.setLastName("Veli");
+        user.setUsername("Ali.Veli");
+        user.setActive(true);
+        existing.setUser(user);
         existing.setAddress("Istanbul");
         existing.setDateOfBirth(LocalDate.parse("1990-01-01"));
 
-        // Update için yeni DTO
         TraineeDto updateDto = new TraineeDto();
         updateDto.setId(1L);
         updateDto.setFirstName("Mehmet");
@@ -86,6 +93,7 @@ class TraineeServiceTest {
         verify(traineeDao, times(1)).findById(1L);
         verify(traineeDao, times(1)).update(any(Trainee.class));
     }
+
 
     @Test
     void shouldThrowExceptionWhenUpdateTraineeNotFound() {
@@ -106,9 +114,12 @@ class TraineeServiceTest {
         // Arrange
         Trainee trainee = new Trainee();
         trainee.setId(1L);
-        trainee.setFirstName("Ali");
-        trainee.setLastName("Veli");
-        trainee.setUsername("Ali.Veli");
+
+        User user = new User();
+        user.setFirstName("Ali");
+        user.setLastName("Veli");
+        user.setUsername("Ali.Veli");
+        trainee.setUser(user);
 
         when(traineeDao.findById(1L)).thenReturn(Optional.of(trainee));
 
@@ -119,6 +130,7 @@ class TraineeServiceTest {
         assertNotNull(result);
         assertEquals("Ali", result.getFirstName());
         assertEquals("Veli", result.getLastName());
+        assertEquals("Ali.Veli", result.getUsername());
         verify(traineeDao, times(1)).findById(1L);
     }
 
@@ -137,8 +149,11 @@ class TraineeServiceTest {
         // Arrange
         Trainee trainee = new Trainee();
         trainee.setId(1L);
-        trainee.setFirstName("Ali");
-        trainee.setLastName("Veli");
+        User user = new User();
+        user.setFirstName("Ali");
+        user.setLastName("Veli");
+        trainee.setUser(user);
+
         when(traineeDao.findById(1L)).thenReturn(Optional.of(trainee));
         doNothing().when(traineeDao).deleteById(1L);
 
@@ -149,20 +164,25 @@ class TraineeServiceTest {
         verify(traineeDao, times(1)).deleteById(1L);
     }
 
+
     @Test
     void shouldReturnAllTrainees() {
         // Arrange
         Trainee t1 = new Trainee();
         t1.setId(1L);
-        t1.setFirstName("Ali");
-        t1.setLastName("Veli");
-        t1.setUsername("Ali.Veli");
+        User user1 = new User();
+        user1.setFirstName("Ali");
+        user1.setLastName("Veli");
+        user1.setUsername("Ali.Veli");
+        t1.setUser(user1);
 
         Trainee t2 = new Trainee();
         t2.setId(2L);
-        t2.setFirstName("Ayşe");
-        t2.setLastName("Yılmaz");
-        t2.setUsername("Ayşe.Yılmaz");
+        User user2 = new User();
+        user2.setFirstName("Ayşe");
+        user2.setLastName("Yılmaz");
+        user2.setUsername("Ayşe.Yılmaz");
+        t2.setUser(user2);
 
         List<Trainee> traineeList = List.of(t1, t2);
         when(traineeDao.findAll()).thenReturn(traineeList);
@@ -175,7 +195,10 @@ class TraineeServiceTest {
         assertEquals(2, result.size());
         assertEquals("Ali", result.get(0).getFirstName());
         assertEquals("Ayşe", result.get(1).getFirstName());
+        assertEquals("Ali.Veli", result.get(0).getUsername());
+        assertEquals("Ayşe.Yılmaz", result.get(1).getUsername());
         verify(traineeDao, times(1)).findAll();
     }
+
 
 }
