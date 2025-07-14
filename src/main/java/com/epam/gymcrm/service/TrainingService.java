@@ -93,7 +93,7 @@ public class TrainingService {
                     logger.warn("Training not found for delete operation with id: {}", id);
                     return new TrainingNotFoundException("Training not found for delete operation with id: " + id);
                 });
-        trainingDao.deleteById(id);
+        trainingDao.deleteById(training.getId());
         logger.info("Training deleted: id={}", id);
     }
 
