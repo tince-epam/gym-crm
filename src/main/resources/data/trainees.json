@@ -1,0 +1,14 @@
+[
+  {
+    "firstName": "Ali",
+    "lastName": "Veli",
+    "dateOfBirth": "1990-01-01",
+    "address": "Istanbul"
+  },
+  {
+    "firstName": "Ayşe",
+    "lastName": "Yılmaz",
+    "dateOfBirth": "1995-05-10",
+    "address": "Ankara"
+  }
+]
