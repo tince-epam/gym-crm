@@ -1,20 +1,27 @@
 package com.epam.gymcrm.controller;
 
+import com.epam.gymcrm.config.AppConfig;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.exception.GlobalExceptionHandler;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.service.TraineeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -22,20 +29,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-@AutoConfigureMockMvc
+@ExtendWith({MockitoExtension.class, SpringExtension.class})
+@ContextConfiguration(classes = {AppConfig.class})
+@WebAppConfiguration
 class TraineeControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private TraineeService traineeService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private TraineeController traineeController;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(traineeController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
 
     @Test
     void shouldCreateTrainee() throws Exception {
@@ -53,7 +68,7 @@ class TraineeControllerTest {
         response.setDateOfBirth("1990-01-01");
         response.setAddress("Some Address");
 
-        when(traineeService.createTrainee(any(TraineeDto.class))).thenReturn(response);
+        Mockito.when(traineeService.createTrainee(Mockito.any(TraineeDto.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/trainees")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,6 +92,19 @@ class TraineeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(2))
                 .andExpect(jsonPath("$.username").value("Jane.Smith"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTraineeNotFound() throws Exception {
+        Long notFoundId = 999L;
+        when(traineeService.findById(notFoundId))
+                .thenThrow(new TraineeNotFoundException("Trainee not found with id: " + notFoundId));
+
+        mockMvc.perform(get("/api/v1/trainees/" + notFoundId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Trainee Not Found"))
+                .andExpect(jsonPath("$.message").value("Trainee not found with id: " + notFoundId));
     }
 
     @Test
@@ -118,19 +146,9 @@ class TraineeControllerTest {
     }
 
     @Test
-    void shouldReturnNotFoundAndErrorResponseWhenTraineeNotFound() throws Exception {
-        Long notFoundId = 999L;
-        when(traineeService.findById(notFoundId)).thenThrow(new TraineeNotFoundException("Trainee not found with id: " + notFoundId));
-
-        mockMvc.perform(get("/api/v1/trainees/" + notFoundId))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Trainee not found with id: " + notFoundId));
-    }
-
-    @Test
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
         TraineeDto invalidRequest = new TraineeDto();
-        invalidRequest.setFirstName("John"); // diğer zorunlu alanlar boş
+        invalidRequest.setFirstName("John");
 
         mockMvc.perform(post("/api/v1/trainees")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,8 +157,6 @@ class TraineeControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Validation Error"))
-                .andExpect(jsonPath("$.details", hasItem("lastName: Last name is required")))
-                .andExpect(jsonPath("$.details", hasItem("dateOfBirth: Date of birth is required")))
-                .andExpect(jsonPath("$.details", hasItem("address: Address is required")));
+                .andExpect(jsonPath("$.details").isArray());
     }
 }

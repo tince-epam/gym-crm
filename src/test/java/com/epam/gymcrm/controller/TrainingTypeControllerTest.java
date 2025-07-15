@@ -1,15 +1,24 @@
 package com.epam.gymcrm.controller;
 
+import com.epam.gymcrm.config.AppConfig;
 import com.epam.gymcrm.dto.TrainingTypeDto;
+import com.epam.gymcrm.exception.GlobalExceptionHandler;
+import com.epam.gymcrm.exception.TrainingTypeNotFoundException;
 import com.epam.gymcrm.service.TrainingTypeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
@@ -20,20 +29,29 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-@AutoConfigureMockMvc
+@ExtendWith({MockitoExtension.class, SpringExtension.class})
+@ContextConfiguration(classes = {AppConfig.class})
+@WebAppConfiguration
 class TrainingTypeControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private TrainingTypeService trainingTypeService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private TrainingTypeController trainingTypeController;
+
+    private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    ;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(trainingTypeController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
 
     @Test
     void shouldCreateTrainingType() throws Exception {
@@ -69,6 +87,19 @@ class TrainingTypeControllerTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenTrainingTypeNotFound() throws Exception {
+        Long notFoundId = 111L;
+        when(trainingTypeService.findById(notFoundId))
+                .thenThrow(new TrainingTypeNotFoundException("Training Type not found with id: " + notFoundId));
+
+        mockMvc.perform(get("/api/v1/training-types/" + notFoundId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Training Type Not Found"))
+                .andExpect(jsonPath("$.message").value("Training Type not found with id: " + notFoundId));
+    }
+
+    @Test
     void shouldGetAllTrainingTypes() throws Exception {
         TrainingTypeDto t1 = new TrainingTypeDto();
         t1.setId(1L);
@@ -99,10 +130,22 @@ class TrainingTypeControllerTest {
 
     @Test
     void shouldDeleteTrainingType() throws Exception {
-
         doNothing().when(trainingTypeService).deleteById(13L);
 
         mockMvc.perform(delete("/api/v1/training-types/13"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenValidationFails() throws Exception {
+        TrainingTypeDto invalidRequest = new TrainingTypeDto();
+        mockMvc.perform(post("/api/v1/training-types")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Validation Error"))
+                .andExpect(jsonPath("$.details").isArray());
     }
 }

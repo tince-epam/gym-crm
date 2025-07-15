@@ -25,7 +25,7 @@ public class TrainingTypeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TrainingTypeDto> getById(@PathVariable Long id) {
+    public ResponseEntity<TrainingTypeDto> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(trainingTypeService.findById(id));
     }
 
@@ -35,14 +35,14 @@ public class TrainingTypeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid TrainingTypeDto dto) {
+    public ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody @Valid TrainingTypeDto dto) {
         dto.setId(id);
         trainingTypeService.update(dto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         trainingTypeService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

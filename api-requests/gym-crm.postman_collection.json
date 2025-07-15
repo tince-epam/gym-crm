@@ -24,13 +24,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainees",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainees",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainees"
@@ -54,13 +55,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainees/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainees/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainees",
@@ -76,13 +78,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainees/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainees/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainees",
@@ -98,13 +101,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainees",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainees",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainees"
@@ -119,13 +123,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainees/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainees/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainees",
@@ -155,13 +160,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainers",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainers",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainers"
@@ -185,13 +191,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainers/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainers/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainers",
@@ -207,13 +214,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainers/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainers/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainers",
@@ -229,13 +237,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainers",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainers",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainers"
@@ -250,13 +259,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainers/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainers/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainers",
@@ -278,7 +288,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"traineeId\": 1,\r\n  \"trainerId\": 1,\r\n  \"trainingName\": \"Strength Training\",\r\n  \"trainingTypeId\": 1,\r\n  \"trainingDate\": \"2025-07-16T13:30:00\",\r\n  \"trainingDuration\": 60\r\n}",
+							"raw": "{\r\n  \"traineeId\": 2,\r\n  \"trainerId\": 2,\r\n  \"trainingName\": \"Strength Training\",\r\n  \"trainingTypeId\": 2,\r\n  \"trainingDate\": \"2025-07-16T13:30:00\",\r\n  \"trainingDuration\": 60\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -286,13 +296,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainings",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainings",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainings"
@@ -308,7 +319,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"traineeId\": 1,\r\n  \"trainerId\": 1,\r\n  \"trainingName\": \"Updated Strength Training\",\r\n  \"trainingTypeId\": 1,\r\n  \"trainingDate\": \"2025-07-14T10:00:00\",\r\n  \"trainingDuration\": 75\r\n}",
+							"raw": "{\r\n  \"traineeId\": 2,\r\n  \"trainerId\": 2,\r\n  \"trainingName\": \"Updated Strength Training\",\r\n  \"trainingTypeId\": 2,\r\n  \"trainingDate\": \"2025-07-14T10:00:00\",\r\n  \"trainingDuration\": 75\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -316,13 +327,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainings/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainings/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainings",
@@ -338,13 +350,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainings/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainings/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainings",
@@ -360,13 +373,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainings",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainings",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainings"
@@ -381,13 +395,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/trainings/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/trainings/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"trainings",
@@ -409,7 +424,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"CrossFit\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Gym\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -417,13 +432,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/training-types",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/training-types",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"training-types"
@@ -439,7 +455,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Yoga\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Running\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -447,13 +463,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/training-types/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/training-types/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"training-types",
@@ -469,13 +486,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/training-types/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/training-types/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"training-types",
@@ -503,13 +521,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/training-types",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/training-types",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"training-types"
@@ -524,13 +543,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/v1/training-types/1",
+							"raw": "http://localhost:8080/gym-crm-1.0-SNAPSHOT/api/v1/training-types/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
+								"gym-crm-1.0-SNAPSHOT",
 								"api",
 								"v1",
 								"training-types",

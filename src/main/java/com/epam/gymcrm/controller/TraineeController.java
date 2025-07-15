@@ -25,7 +25,7 @@ public class TraineeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TraineeDto> getTraineeById(@PathVariable Long id) {
+    public ResponseEntity<TraineeDto> getTraineeById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(traineeService.findById(id));
     }
 
@@ -35,14 +35,14 @@ public class TraineeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTrainee(@PathVariable Long id, @RequestBody @Valid TraineeDto traineeDto) {
+    public ResponseEntity<Void> updateTrainee(@PathVariable("id") Long id, @RequestBody @Valid TraineeDto traineeDto) {
         traineeDto.setId(id);
         traineeService.update(traineeDto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainee(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTrainee(@PathVariable("id") Long id) {
         traineeService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
