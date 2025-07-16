@@ -3,10 +3,7 @@ package com.epam.gymcrm.mapper;
 import com.epam.gymcrm.domain.Training;
 import com.epam.gymcrm.dto.TrainingDto;
 
-import java.time.format.DateTimeFormatter;
-
 public class TrainingMapper {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public static Training toTraining(TrainingDto trainingDto) {
         Training training = new Training();
