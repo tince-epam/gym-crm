@@ -1,16 +1,41 @@
 package com.epam.gymcrm.domain;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "trainings")
 public class Training {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long traineeId;
-    private Long trainerId;
+
+    @ManyToOne
+    @JoinColumn(name = "trainee_id", nullable = false)
+    private Trainee trainee;
+
+    @ManyToOne
+    @JoinColumn(name = "trainer_Id", nullable = false)
+    private Trainer trainer;
+
+    @Column(nullable = false, name = "training_name")
     private String trainingName;
-    private Long trainingTypeId;
+
+    @ManyToOne
+    @JoinColumn(name = "training_type_id", nullable = false)
+    private TrainingType trainingType;
+
+    @Column(nullable = false, name = "training_date")
     private LocalDateTime trainingDate;
+
+    @Column(nullable = false, name = "training_duration")
     private int trainingDuration;
+
+    public Training() {
+    }
 
     public Long getId() {
         return id;
@@ -20,20 +45,20 @@ public class Training {
         this.id = id;
     }
 
-    public Long getTraineeId() {
-        return traineeId;
+    public Trainee getTrainee() {
+        return trainee;
     }
 
-    public void setTraineeId(Long traineeId) {
-        this.traineeId = traineeId;
+    public void setTrainee(Trainee trainee) {
+        this.trainee = trainee;
     }
 
-    public Long getTrainerId() {
-        return trainerId;
+    public Trainer getTrainer() {
+        return trainer;
     }
 
-    public void setTrainerId(Long trainerId) {
-        this.trainerId = trainerId;
+    public void setTrainer(Trainer trainer) {
+        this.trainer = trainer;
     }
 
     public String getTrainingName() {
@@ -44,12 +69,12 @@ public class Training {
         this.trainingName = trainingName;
     }
 
-    public Long getTrainingTypeId() {
-        return trainingTypeId;
+    public TrainingType getTrainingType() {
+        return trainingType;
     }
 
-    public void setTrainingTypeId(Long trainingTypeId) {
-        this.trainingTypeId = trainingTypeId;
+    public void setTrainingType(TrainingType trainingType) {
+        this.trainingType = trainingType;
     }
 
     public LocalDateTime getTrainingDate() {

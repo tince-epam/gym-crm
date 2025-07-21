@@ -1,10 +1,24 @@
 package com.epam.gymcrm.domain;
 
-import java.util.Objects;
+import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+@Entity
+@Table(name = "training_types")
 public class TrainingType {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+
+    @Column(nullable = false, name = "training_type_name")
+    private String trainingTypeName;
+
+    @OneToMany(mappedBy = "trainingType")
+    private Set<Training> trainings = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -14,12 +28,20 @@ public class TrainingType {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTrainingTypeName() {
+        return trainingTypeName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTrainingTypeName(String trainingTypeName) {
+        this.trainingTypeName = trainingTypeName;
+    }
+
+    public Set<Training> getTrainings() {
+        return trainings;
+    }
+
+    public void setTrainings(Set<Training> trainings) {
+        this.trainings = trainings;
     }
 
     @Override
