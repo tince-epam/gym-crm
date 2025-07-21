@@ -9,7 +9,7 @@ public class TrainingTypeDto {
     private Long id;
 
     @NotBlank(message = "Training type name is required")
-    private String name;
+    private String trainingTypeName;
 
     public Long getId() {
         return id;
@@ -19,11 +19,11 @@ public class TrainingTypeDto {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTrainingTypeName() {
+        return trainingTypeName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTrainingTypeName(String trainingTypeName) {
+        this.trainingTypeName = trainingTypeName;
     }
 }

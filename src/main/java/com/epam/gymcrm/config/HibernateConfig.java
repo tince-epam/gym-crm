@@ -1,9 +1,10 @@
 package com.epam.gymcrm.config;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -15,33 +16,35 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
+@EnableJpaRepositories(basePackages = "com.epam.gymcrm.repository")
 @ComponentScan(basePackages = "com.epam.gymcrm")
 public class HibernateConfig {
 
     @Bean
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/gymcrm");
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/gymcrm");
         dataSource.setUsername("sa");
         dataSource.setPassword("s3cr3t");
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setMaximumPoolSize(10);
         return dataSource;
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
-        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-        entityManagerFactoryBean.setDataSource(dataSource());
-        entityManagerFactoryBean.setPackagesToScan("com.epam.gymcrm.domain");
-        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        entityManagerFactoryBean.setJpaProperties(jpaProperties());
-        return entityManagerFactoryBean;
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource());
+        em.setPackagesToScan("com.epam.gymcrm.domain");
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        em.setJpaProperties(jpaProperties());
+        return em;
     }
 
     @Bean
     public PlatformTransactionManager transactionManager() {
         JpaTransactionManager tx = new JpaTransactionManager();
-        tx.setEntityManagerFactory(entityManagerFactoryBean().getObject());
+        tx.setEntityManagerFactory(entityManagerFactory().getObject());
         return tx;
     }
 

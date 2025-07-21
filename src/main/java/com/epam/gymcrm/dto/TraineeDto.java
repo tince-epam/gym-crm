@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public class TraineeDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -21,11 +23,12 @@ public class TraineeDto {
     private Boolean isActive;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @NotBlank(message = "Date of birth is required")
     private String dateOfBirth;
 
-    @NotBlank(message = "Address is required")
     private String address;
+
+    // Many-to-Many Trainer
+    private List<Long> trainerIds;
 
     public Long getId() {
         return id;
@@ -35,19 +38,19 @@ public class TraineeDto {
         this.id = id;
     }
 
-    public String getFirstName() {
+    public @NotBlank(message = "First name is required") String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    public void setFirstName(@NotBlank(message = "First name is required") String firstName) {
         this.firstName = firstName;
     }
 
-    public String getLastName() {
+    public @NotBlank(message = "Last name is required") String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    public void setLastName(@NotBlank(message = "Last name is required") String lastName) {
         this.lastName = lastName;
     }
 
@@ -81,5 +84,13 @@ public class TraineeDto {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public List<Long> getTrainerIds() {
+        return trainerIds;
+    }
+
+    public void setTrainerIds(List<Long> trainerIds) {
+        this.trainerIds = trainerIds;
     }
 }

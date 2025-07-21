@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     container_name: gym_crm_postgres_container

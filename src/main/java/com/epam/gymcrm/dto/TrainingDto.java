@@ -25,7 +25,7 @@ public class TrainingDto {
     private Long trainingTypeId;
 
     @NotNull(message = "Training date is required")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")  // 2025-07-13T13:30:00
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime trainingDate;
 
     @Min(value = 1, message = "Training duration must be at least 1 minute")

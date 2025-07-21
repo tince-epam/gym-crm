@@ -3,6 +3,8 @@ package com.epam.gymcrm.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public class TrainerDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -21,6 +23,8 @@ public class TrainerDto {
 
     @NotBlank(message = "Specialization is required")
     private String specialization;
+
+    private List<Long> traineeIds;
 
     public Long getId() {
         return id;
@@ -68,5 +72,13 @@ public class TrainerDto {
 
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
+    }
+
+    public List<Long> getTraineeIds() {
+        return traineeIds;
+    }
+
+    public void setTraineeIds(List<Long> traineeIds) {
+        this.traineeIds = traineeIds;
     }
 }

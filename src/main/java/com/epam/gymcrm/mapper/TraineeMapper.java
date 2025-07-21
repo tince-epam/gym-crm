@@ -1,12 +1,14 @@
 package com.epam.gymcrm.mapper;
 
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TraineeMapper {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -25,6 +27,17 @@ public class TraineeMapper {
                 trainee.getDateOfBirth() != null ? trainee.getDateOfBirth().format(FORMATTER) : null
         );
         dto.setAddress(trainee.getAddress());
+
+        // Map trainers (Many-to-Many relationship) by extracting their IDs
+        if (Objects.nonNull(trainee.getTrainers()) && !trainee.getTrainers().isEmpty()) {
+            dto.setTrainerIds(
+                    trainee.getTrainers().stream()
+                            .map(Trainer::getId)
+                            .collect(Collectors.toList())
+            );
+        } else {
+            dto.setTrainerIds(null);
+        }
 
         return dto;
     }

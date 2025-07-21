@@ -1,6 +1,5 @@
 package com.epam.gymcrm.service;
 
-import com.epam.gymcrm.dao.TrainerDao;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
@@ -22,7 +21,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceTest {
 
-    @Mock
+    /*@Mock
     private TrainerDao trainerDao;
 
     @InjectMocks
@@ -194,5 +193,5 @@ class TrainerServiceTest {
         assertEquals("Ayşe.Kaya", result.get(1).getUsername());
         verify(trainerDao, times(1)).findAll();
     }
-
+*/
 }

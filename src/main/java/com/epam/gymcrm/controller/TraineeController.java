@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/trainees")
+@RequestMapping(value = "/api/v1/trainees", produces = "application/json")
 public class TraineeController {
 
     private final TraineeService traineeService;
@@ -24,7 +24,7 @@ public class TraineeController {
         return new ResponseEntity<>(traineeService.createTrainee(traineeDto), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<TraineeDto> getTraineeById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(traineeService.findById(id));
     }

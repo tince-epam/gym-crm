@@ -1,10 +1,12 @@
 package com.epam.gymcrm.mapper;
 
+import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TrainerMapper {
 
@@ -38,6 +40,17 @@ public class TrainerMapper {
         trainerDto.setUsername(trainer.getUser().getUsername());
         trainerDto.setActive(trainer.getUser().getActive());
         trainerDto.setSpecialization(trainer.getSpecialization());
+
+        // Map ManyToMany trainees as traineeIds
+        if (Objects.nonNull(trainer.getTrainees()) && !trainer.getTrainees().isEmpty()) {
+            trainerDto.setTraineeIds(
+                    trainer.getTrainees().stream()
+                            .map(Trainee::getId)
+                            .collect(Collectors.toList())
+            );
+        } else {
+            trainerDto.setTraineeIds(null);
+        }
 
         return trainerDto;
     }

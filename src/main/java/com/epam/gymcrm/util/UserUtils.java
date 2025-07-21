@@ -1,17 +1,19 @@
 package com.epam.gymcrm.util;
 
+import com.epam.gymcrm.domain.User;
+import com.epam.gymcrm.repository.UserRepository;
+
 import java.security.SecureRandom;
-import java.util.List;
 
 public class UserUtils {
 
     private static final int PASSWORD_CHAR_LENGTH = 10;
 
-    public static String generateUniqueUsername(String firstName, String lastName, List<String> existingUsername) {
-        String baseUsername = firstName + "." + lastName;
+    public static String generateUniqueUsername(String firstName, String lastName, UserRepository userRepository) {
+        String baseUsername = firstName.toLowerCase() + "." + lastName.toLowerCase();
         String username = baseUsername;
         int counter = 1;
-        while (existingUsername.contains(username)) {
+        while (userRepository.existsByUsername(username)) {
             username = baseUsername + counter;
             counter++;
         }
@@ -26,5 +28,18 @@ public class UserUtils {
             sb.append((char) ascii);
         }
         return sb.toString();
+    }
+
+    public static User createUser(String firstName, String lastName, UserRepository userRepository) {
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+
+        String username = generateUniqueUsername(firstName, lastName, userRepository);
+        user.setUsername(username);
+
+        user.setPassword(generateRandomPassword());
+        user.setActive(true);
+        return user;
     }
 }

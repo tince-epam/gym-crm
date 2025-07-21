@@ -1,58 +1,66 @@
 package com.epam.gymcrm.service;
 
-import com.epam.gymcrm.dao.TraineeDao;
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
+import com.epam.gymcrm.repository.TraineeRepository;
+import com.epam.gymcrm.repository.TrainerRepository;
+import com.epam.gymcrm.repository.UserRepository;
 import com.epam.gymcrm.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Set;
 
 @Service
 public class TraineeService {
 
-    private final TraineeDao traineeDao;
+    private final TraineeRepository traineeRepository;
+    private final TrainerRepository trainerRepository;
+    private final UserRepository userRepository;
 
-    private final AtomicLong traineeIdSequence = new AtomicLong(1);
     private static final Logger logger = LoggerFactory.getLogger(TraineeService.class);
 
-    public TraineeService(TraineeDao traineeDao) {
-        this.traineeDao = traineeDao;
+    public TraineeService(TraineeRepository traineeRepository, TrainerRepository trainerRepository, UserRepository userRepository) {
+        this.traineeRepository = traineeRepository;
+        this.trainerRepository = trainerRepository;
+        this.userRepository = userRepository;
     }
 
+    @Transactional
     public TraineeDto createTrainee(TraineeDto traineeDto) {
         logger.info("Creating new trainee: {} {}", traineeDto.getFirstName(), traineeDto.getLastName());
         Trainee trainee = TraineeMapper.toTrainee(traineeDto);
 
-        trainee.setId(traineeIdSequence.getAndIncrement());
-
-        User user = new User();
-        user.setFirstName(traineeDto.getFirstName());
-        user.setLastName(traineeDto.getLastName());
-        user.setUsername(generateUsername(user));
-        user.setPassword(UserUtils.generateRandomPassword());
-        user.setActive(true);
+        User user = UserUtils.createUser(traineeDto.getFirstName(), traineeDto.getLastName(), userRepository);
 
         trainee.setUser(user);
 
-        // Save with DAO
-        Trainee savedTrainee = traineeDao.save(trainee);
+        // Relationship: set Trainer (ManyToMany)
+        if (traineeDto.getTrainerIds() != null && !traineeDto.getTrainerIds().isEmpty()) {
+            Set<Trainer> trainers = new HashSet<>(trainerRepository.findAllById(traineeDto.getTrainerIds()));
+            trainee.setTrainers(trainers);
+        }
 
-        logger.info("Trainee created: id={}, username={}", trainee.getId(), user.getUsername());
+        // Save with DAO
+        Trainee savedTrainee = traineeRepository.save(trainee);
+
+        logger.info("Trainee created: id={}, username={}", savedTrainee.getId(), savedTrainee.getUser().getUsername());
         return TraineeMapper.toTraineeDto(savedTrainee);
     }
 
     public TraineeDto findById(Long id) {
         logger.info("Finding trainee by id: {}", id);
-        Trainee trainee = traineeDao.findById(id)
+        Trainee trainee = traineeRepository.findByIdWithTrainers(id)
                 .orElseThrow(() -> {
                     logger.warn("Trainee not found for id: {}", id);
                     return new TraineeNotFoundException("Trainee not found with id: " + id);
@@ -63,21 +71,27 @@ public class TraineeService {
 
     public List<TraineeDto> findAll() {
         logger.info("Retrieving all trainees");
-        return traineeDao.findAll().stream()
+        return traineeRepository.findAllWithTrainers().stream()
                 .map(TraineeMapper::toTraineeDto)
                 .toList();
     }
 
+    @Transactional
     public void deleteById(Long id) {
         logger.info("Deleting trainee with id: {}", id);
-        findById(id);
-        traineeDao.deleteById(id);
+        Trainee trainee = traineeRepository.findByIdWithTrainers(id)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee to delete not found: id={}", id);
+                    return new TraineeNotFoundException("Trainee not found with id: " + id);
+                });
+        traineeRepository.delete(trainee);
         logger.info("Trainee deleted: id={}", id);
     }
 
+    @Transactional
     public void update(TraineeDto traineeDto) {
         Long id = traineeDto.getId();
-        Trainee trainee = traineeDao.findById(id)
+        Trainee trainee = traineeRepository.findByIdWithTrainers(id)
                 .orElseThrow(() -> {
                     logger.warn("Trainee to update not found: id={}", id);
                     return new TraineeNotFoundException("Trainee not found with id: " + id);
@@ -85,30 +99,49 @@ public class TraineeService {
 
         logger.info("Updating trainee: id={}, username={}", id, trainee.getUser().getUsername());
 
-        if (!Objects.isNull(traineeDto.getFirstName())) trainee.getUser().setFirstName(traineeDto.getFirstName());
-        if (!Objects.isNull(traineeDto.getLastName())) trainee.getUser().setLastName(traineeDto.getLastName());
-        if (!Objects.isNull(traineeDto.getActive())) trainee.getUser().setActive(traineeDto.getActive());
+        String oldFirstName = trainee.getUser().getFirstName();
+        String oldLastName = trainee.getUser().getLastName();
 
-        if (!Objects.isNull(traineeDto.getDateOfBirth()))
-            trainee.setDateOfBirth(LocalDate.parse(traineeDto.getDateOfBirth()));
-        if (!Objects.isNull(traineeDto.getAddress())) trainee.setAddress(traineeDto.getAddress());
-
-        String updatedUsername = generateUsername(trainee.getUser());
-        if (!updatedUsername.equals(trainee.getUser().getUsername())) {
-            trainee.getUser().setUsername(updatedUsername);
+        if (Objects.nonNull(traineeDto.getFirstName())) {
+            trainee.getUser().setFirstName(traineeDto.getFirstName());
+        }
+        if (Objects.nonNull(traineeDto.getLastName())) {
+            trainee.getUser().setLastName(traineeDto.getLastName());
+        }
+        if (Objects.nonNull(traineeDto.getActive())) {
+            trainee.getUser().setActive(traineeDto.getActive());
+        }
+        if (Objects.nonNull(traineeDto.getDateOfBirth())) {
+            try {
+                trainee.setDateOfBirth(LocalDate.parse(traineeDto.getDateOfBirth()));
+            } catch (Exception e) {
+                logger.warn("Invalid dateOfBirth: {}", traineeDto.getDateOfBirth());
+            }
+        }
+        if (Objects.nonNull(traineeDto.getAddress())) {
+            trainee.setAddress(traineeDto.getAddress());
         }
 
-        traineeDao.update(trainee);
+        if (Objects.nonNull(traineeDto.getTrainerIds())) {
+            Set<Trainer> trainers = new HashSet<>(trainerRepository.findAllById(traineeDto.getTrainerIds()));
+            trainee.setTrainers(trainers);
+        }
+
+        boolean isNameChanged =
+                (Objects.nonNull(traineeDto.getFirstName()) && !Objects.equals(traineeDto.getFirstName(), oldFirstName)) ||
+                        (Objects.nonNull(traineeDto.getLastName()) && !Objects.equals(traineeDto.getLastName(), oldLastName));
+
+        if (isNameChanged) {
+            String newUsername = UserUtils.generateUniqueUsername(
+                    trainee.getUser().getFirstName(),
+                    trainee.getUser().getLastName(),
+                    userRepository
+            );
+            trainee.getUser().setUsername(newUsername);
+        }
+
+        traineeRepository.save(trainee);
 
         logger.info("Trainee updated: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
-    }
-
-    private String generateUsername(User user) {
-        List<String> existingUsernames = traineeDao.findAll()
-                .stream()
-                .map(trainee -> trainee.getUser().getUsername())
-                .toList();
-
-        return UserUtils.generateUniqueUsername(user.getFirstName(), user.getLastName(), existingUsernames);
     }
 }
