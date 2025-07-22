@@ -1,5 +1,6 @@
 package com.epam.gymcrm.service;
 
+import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
@@ -11,6 +12,7 @@ import com.epam.gymcrm.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +30,7 @@ public class TrainerService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public TrainerDto createTrainer(TrainerDto trainerDto) {
         logger.info("Creating new trainer: {} {}", trainerDto.getFirstName(), trainerDto.getLastName());
         Trainer trainer = TrainerMapper.toTrainer(trainerDto);
@@ -61,6 +64,7 @@ public class TrainerService {
                 .toList();
     }
 
+    @Transactional
     public void deleteById(Long id) {
         logger.info("Deleting trainer with id: {}", id);
         Trainer trainer = trainerRepository.findByIdWithTrainees(id)
@@ -68,10 +72,17 @@ public class TrainerService {
                     logger.warn("Trainer to delete not found for id: {}", id);
                     return new TrainerNotFoundException("Trainer not found with id: " + id);
                 });
+        
+        for(Trainee trainee : trainer.getTrainees()) {
+        	trainee.getTrainers().remove(trainer);
+        }
+        trainer.getTrainees().clear();
+        
         trainerRepository.delete(trainer);
         logger.info("Trainer deleted: id={}", id);
     }
 
+    @Transactional
     public void update(TrainerDto trainerDto) {
         Long id = trainerDto.getId();
         Trainer trainer = trainerRepository.findByIdWithTrainees(id)

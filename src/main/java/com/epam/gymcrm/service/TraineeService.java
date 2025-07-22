@@ -46,7 +46,7 @@ public class TraineeService {
         trainee.setUser(user);
 
         // Relationship: set Trainer (ManyToMany)
-        if (traineeDto.getTrainerIds() != null && !traineeDto.getTrainerIds().isEmpty()) {
+        if (Objects.nonNull(traineeDto.getTrainerIds()) && !traineeDto.getTrainerIds().isEmpty()) {
             Set<Trainer> trainers = new HashSet<>(trainerRepository.findAllById(traineeDto.getTrainerIds()));
             trainee.setTrainers(trainers);
         }
