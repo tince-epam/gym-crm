@@ -54,7 +54,7 @@ public class TrainerService {
                     logger.warn("Trainer not found for id: {}", id);
                     return new TrainerNotFoundException("Trainer not found with id: " + id);
                 });
-        logger.info("Trainer found: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
+        logger.info("Trainer found by Id: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
         return TrainerMapper.toTrainerDto(trainer);
     }
 
@@ -144,5 +144,16 @@ public class TrainerService {
 
         logger.info("Login success: Trainer '{}' authenticated successfully.", username);
         return Boolean.TRUE;
+    }
+
+    public TrainerDto findByUsername(String username) {
+        logger.info("Finding trainer by username: {}", username);
+        Trainer trainer = trainerRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Trainer not found with username: {}", username);
+                    return new TrainerNotFoundException("Trainer not found with username: " + username);
+                });
+        logger.info("Trainer found by username: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
+        return TrainerMapper.toTrainerDto(trainer);
     }
 }

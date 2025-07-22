@@ -231,4 +231,18 @@ class TrainerServiceTest {
         assertTrue(trainerService.isTrainerCredentialsValid("trainer1", "correct_pw"));
     }
 
+    @Test
+    void shouldFindTrainerByUsername() {
+        when(trainerRepository.findByUserUsername("mehmet.yilmaz")).thenReturn(Optional.of(trainer));
+        TrainerDto dto = trainerService.findByUsername("mehmet.yilmaz");
+        assertNotNull(dto);
+        assertEquals("mehmet.yilmaz", dto.getUsername());
+    }
+
+    @Test
+    void shouldThrowTrainerNotFoundExceptionWhenFindByUsername() {
+        when(trainerRepository.findByUserUsername("nouser")).thenReturn(Optional.empty());
+        assertThrows(TrainerNotFoundException.class, () ->
+                trainerService.findByUsername("nouser"));
+    }
 }

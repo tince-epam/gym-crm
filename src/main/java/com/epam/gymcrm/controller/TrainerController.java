@@ -66,4 +66,14 @@ public class TrainerController {
         trainerService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<TrainerDto> getTrainerByUsername(
+            @RequestParam(name = "username") String uname,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
+        return ResponseEntity.ok(trainerService.findByUsername(uname));
+    }
 }

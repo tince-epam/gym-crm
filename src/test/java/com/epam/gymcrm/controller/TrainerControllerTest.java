@@ -166,4 +166,38 @@ class TrainerControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation Error"))
                 .andExpect(jsonPath("$.details").isArray());
     }
+
+    @Test
+    void shouldGetTrainerByUsername() throws Exception {
+        TrainerDto response = new TrainerDto();
+        response.setId(100L);
+        response.setUsername("test.user");
+        response.setFirstName("Test");
+
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        when(trainerService.findByUsername("test.user")).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/trainers/search")
+                        .param("username", "test.user")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.username").value("test.user"))
+                .andExpect(jsonPath("$.firstName").value("Test"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTrainerByUsernameNotFound() throws Exception {
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        when(trainerService.findByUsername("nouser")).thenThrow(new TrainerNotFoundException("Trainer not found"));
+
+        mockMvc.perform(get("/api/v1/trainers/search")
+                        .param("username", "nouser")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Trainer Not Found"));
+    }
 }
