@@ -19,8 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -217,6 +216,53 @@ class TraineeControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Trainee Not Found"))
                 .andExpect(jsonPath("$.message").value("Trainee not found with username: nouser"));
+    }
+
+    @Test
+    void shouldChangePasswordWhenValidRequestWithBody() throws Exception {
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doNothing().when(traineeService)
+                .changeTraineePassword(USERNAME, PASSWORD, "newPass");
+
+        // Only newPassword in body, username & oldPassword in headers
+        String body = """
+                {
+                    "newPassword": "newPass"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/v1/trainees/password")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
+
+        verify(traineeService).isTraineeCredentialsValid(USERNAME, PASSWORD);
+        verify(traineeService).changeTraineePassword(USERNAME, PASSWORD, "newPass");
+    }
+
+    @Test
+    void shouldReturn401WhenOldPasswordIsWrong() throws Exception {
+        doThrow(new InvalidCredentialsException("Old password is incorrect"))
+                .when(traineeService).isTraineeCredentialsValid("test.user", "wrongOldPass");
+
+        String body = """
+                {
+                    "newPassword": "newPass"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/v1/trainees/password")
+                        .header("X-Username", "test.user")
+                        .header("X-Password", "wrongOldPass")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Old password is incorrect"));
+
+        verify(traineeService).isTraineeCredentialsValid("test.user", "wrongOldPass");
+        verify(traineeService, never()).changeTraineePassword(any(), any(), any());
     }
 
 }

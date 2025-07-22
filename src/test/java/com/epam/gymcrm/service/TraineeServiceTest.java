@@ -215,4 +215,51 @@ class TraineeServiceTest {
         assertThrows(TraineeNotFoundException.class, () -> traineeService.findByUsername("nouser"));
         verify(traineeRepository).findByUserUsername("nouser");
     }
+
+    @Test
+    void shouldChangePasswordWhenOldPasswordMatches() {
+        User user = new User();
+        user.setUsername("test.user");
+        user.setPassword("oldPass");
+        Trainee trainee = new Trainee();
+        trainee.setUser(user);
+
+        when(traineeRepository.findByUserUsername("test.user"))
+                .thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(any(Trainee.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        traineeService.changeTraineePassword("test.user", "oldPass", "newPass");
+
+        assertEquals("newPass", trainee.getUser().getPassword());
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialsExceptionWhenOldPasswordDoesNotMatch() {
+        User user = new User();
+        user.setUsername("test.user");
+        user.setPassword("oldPass");
+        Trainee trainee = new Trainee();
+        trainee.setUser(user);
+
+        when(traineeRepository.findByUserUsername("test.user"))
+                .thenReturn(Optional.of(trainee));
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                traineeService.changeTraineePassword("test.user", "wrongOldPass", "newPass")
+        );
+        verify(traineeRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowTraineeNotFoundExceptionWhenUserNotFound() {
+        when(traineeRepository.findByUserUsername("nouser"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () ->
+                traineeService.changeTraineePassword("nouser", "anyPass", "newPass")
+        );
+        verify(traineeRepository, never()).save(any());
+    }
 }

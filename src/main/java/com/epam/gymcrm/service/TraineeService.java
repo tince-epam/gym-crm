@@ -172,4 +172,27 @@ public class TraineeService {
         logger.info("Trainee found by username: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
         return TraineeMapper.toTraineeDto(trainee);
     }
+
+    @Transactional
+    public void changeTraineePassword(String username, String oldPassword, String newPassword) {
+        // Find trainee by username
+        Trainee trainee = traineeRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee not found for password change: username={}", username);
+                    return new TraineeNotFoundException("Trainee not found with username: " + username);
+                });
+
+        // Check if old password matches
+        if (!trainee.getUser().getPassword().equals(oldPassword)) {
+            logger.warn("Invalid old password for username: {}", username);
+            throw new InvalidCredentialsException("Old password is incorrect");
+        }
+
+        // Set new password
+        trainee.getUser().setPassword(newPassword);
+
+        // Save trainee
+        traineeRepository.save(trainee);
+        logger.info("Password changed successfully for username: {}", username);
+    }
 }
