@@ -156,4 +156,27 @@ public class TrainerService {
         logger.info("Trainer found by username: id={}, username={}", trainer.getId(), trainer.getUser().getUsername());
         return TrainerMapper.toTrainerDto(trainer);
     }
+
+    @Transactional
+    public void changeTrainerPassword(String username, String oldPassword, String newPassword) {
+        // Find trainer by username
+        Trainer trainer = trainerRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Trainer not found for password change: username={}", username);
+                    return new TrainerNotFoundException("Trainer not found with username: " + username);
+                });
+
+        // Check if old password matches
+        if (!trainer.getUser().getPassword().equals(oldPassword)) {
+            logger.warn("Invalid old password for username: {}", username);
+            throw new InvalidCredentialsException("Old password is incorrect");
+        }
+
+        // Set new password
+        trainer.getUser().setPassword(newPassword);
+
+        // Save trainer
+        trainerRepository.save(trainer);
+        logger.info("Password changed successfully for trainer username: {}", username);
+    }
 }

@@ -2,6 +2,7 @@ package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.service.TrainerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -200,4 +200,51 @@ class TrainerControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Trainer Not Found"));
     }
+
+    @Test
+    void shouldChangeTrainerPasswordWhenValidRequestWithBody() throws Exception {
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doNothing().when(trainerService)
+                .changeTrainerPassword(USERNAME, PASSWORD, "newPass");
+
+        String body = """
+                {
+                    "newPassword": "newPass"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/v1/trainers/password")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
+
+        verify(trainerService).isTrainerCredentialsValid(USERNAME, PASSWORD);
+        verify(trainerService).changeTrainerPassword(USERNAME, PASSWORD, "newPass");
+    }
+
+    @Test
+    void shouldReturn401WhenTrainerOldPasswordIsWrong() throws Exception {
+        doThrow(new InvalidCredentialsException("Old password is incorrect"))
+                .when(trainerService).isTrainerCredentialsValid("trainer.user", "wrongOldPass");
+
+        String body = """
+                {
+                    "newPassword": "newPass"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/v1/trainers/password")
+                        .header("X-Username", "trainer.user")
+                        .header("X-Password", "wrongOldPass")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Old password is incorrect"));
+
+        verify(trainerService).isTrainerCredentialsValid("trainer.user", "wrongOldPass");
+        verify(trainerService, never()).changeTrainerPassword(any(), any(), any());
+    }
+
 }

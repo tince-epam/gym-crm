@@ -1,5 +1,6 @@
 package com.epam.gymcrm.controller;
 
+import com.epam.gymcrm.dto.PasswordChangeRequestDto;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.service.TrainerService;
 import jakarta.validation.Valid;
@@ -75,5 +76,16 @@ public class TrainerController {
     ) {
         trainerService.isTrainerCredentialsValid(username, password);
         return ResponseEntity.ok(trainerService.findByUsername(uname));
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Void> changeTrainerPassword(
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password,
+            @RequestBody PasswordChangeRequestDto passwordChangeRequest
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
+        trainerService.changeTrainerPassword(username, password, passwordChangeRequest.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 }
