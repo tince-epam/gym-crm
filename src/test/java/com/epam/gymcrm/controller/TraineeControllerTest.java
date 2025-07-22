@@ -3,6 +3,7 @@ package com.epam.gymcrm.controller;
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
+import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.service.TraineeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -179,4 +180,43 @@ class TraineeControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation Error"))
                 .andExpect(jsonPath("$.details").isArray());
     }
+
+    @Test
+    void shouldGetTraineeByUsername() throws Exception {
+        TraineeDto response = new TraineeDto();
+        response.setId(11L);
+        response.setUsername("jane.smith");
+        response.setFirstName("Jane");
+        response.setLastName("Smith");
+
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        when(traineeService.findByUsername("jane.smith")).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/trainees/search")
+                        .param("username", "jane.smith")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(11))
+                .andExpect(jsonPath("$.username").value("jane.smith"))
+                .andExpect(jsonPath("$.firstName").value("Jane"))
+                .andExpect(jsonPath("$.lastName").value("Smith"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTraineeByUsernameNotExists() throws Exception {
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        when(traineeService.findByUsername("nouser"))
+                .thenThrow(new TraineeNotFoundException("Trainee not found with username: nouser"));
+
+        mockMvc.perform(get("/api/v1/trainees/search")
+                        .param("username", "nouser")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Trainee Not Found"))
+                .andExpect(jsonPath("$.message").value("Trainee not found with username: nouser"));
+    }
+
 }
