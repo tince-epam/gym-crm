@@ -5,6 +5,10 @@ import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
+import com.epam.gymcrm.repository.TrainerRepository;
+import com.epam.gymcrm.repository.UserRepository;
+import com.epam.gymcrm.util.UserUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,177 +25,169 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceTest {
 
-    /*@Mock
-    private TrainerDao trainerDao;
+    @Mock
+    TrainerRepository trainerRepository;
+    @Mock
+    UserRepository userRepository;
 
     @InjectMocks
-    private TrainerService trainerService;
+    TrainerService trainerService;
+
+    TrainerDto trainerDto;
+    Trainer trainer;
+    User user;
+
+    @BeforeEach
+    void setUp() {
+        trainerDto = new TrainerDto();
+        trainerDto.setFirstName("Mehmet");
+        trainerDto.setLastName("Yılmaz");
+        trainerDto.setSpecialization("Fitness");
+
+        user = new User();
+        user.setId(100L);
+        user.setFirstName("Mehmet");
+        user.setLastName("Yılmaz");
+        user.setUsername("mehmet.yilmaz");
+        user.setPassword("pass");
+        user.setActive(true);
+
+        trainer = TrainerMapper.toTrainer(trainerDto);
+        trainer.setId(1L);
+        trainer.setUser(user);
+    }
 
     @Test
     void shouldCreateTrainer() {
-        // Arrange
-        TrainerDto dto = new TrainerDto();
-        dto.setFirstName("Mehmet");
-        dto.setLastName("Yılmaz");
-        dto.setSpecialization("Fitness");
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> {
+            Trainer t = inv.getArgument(0);
+            t.setId(1L);
+            t.getUser().setId(100L);
+            return t;
+        });
 
-        Trainer trainer = TrainerMapper.toTrainer(dto);
-        trainer.setId(1L);
-        User user = new User();
-        user.setFirstName("Mehmet");
-        user.setLastName("Yılmaz");
-        user.setUsername("Mehmet.Yılmaz");
-        user.setPassword("password123");
-        user.setActive(true);
-        trainer.setUser(user);
+        TrainerDto result = trainerService.createTrainer(trainerDto);
 
-        when(trainerDao.save(any(Trainer.class))).thenReturn(trainer);
-
-        // Act
-        TrainerDto result = trainerService.createTrainer(dto);
-
-        // Assert
         assertNotNull(result);
         assertEquals("Mehmet", result.getFirstName());
         assertEquals("Yılmaz", result.getLastName());
-        verify(trainerDao, times(1)).save(any(Trainer.class));
+        verify(trainerRepository).save(any(Trainer.class));
     }
-
 
     @Test
     void shouldFindTrainerById() {
-        // Arrange
-        Trainer trainer = new Trainer();
-        trainer.setId(1L);
-        User user = new User();
-        user.setFirstName("Mehmet");
-        user.setLastName("Yılmaz");
-        user.setUsername("Mehmet.Yılmaz");
-        trainer.setUser(user);
+        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.of(trainer));
 
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-
-        // Act
         TrainerDto result = trainerService.findById(1L);
 
-        // Assert
         assertNotNull(result);
         assertEquals("Mehmet", result.getFirstName());
         assertEquals("Yılmaz", result.getLastName());
-        assertEquals("Mehmet.Yılmaz", result.getUsername());
-        verify(trainerDao, times(1)).findById(1L);
+        assertEquals("mehmet.yilmaz", result.getUsername());
+        verify(trainerRepository).findByIdWithTrainees(1L);
     }
-
 
     @Test
     void shouldThrowExceptionWhenTrainerNotFound() {
-        // Arrange
-        when(trainerDao.findById(100L)).thenReturn(Optional.empty());
+        when(trainerRepository.findByIdWithTrainees(100L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(TrainerNotFoundException.class, () -> trainerService.findById(100L));
-        verify(trainerDao, times(1)).findById(100L);
+        verify(trainerRepository).findByIdWithTrainees(100L);
     }
 
     @Test
     void shouldDeleteTrainer() {
-        // Arrange
-        Trainer trainer = new Trainer();
-        trainer.setId(1L);
-        User user = new User();
-        user.setFirstName("Mehmet");
-        trainer.setUser(user);
+        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.of(trainer));
 
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        doNothing().when(trainerDao).deleteById(1L);
+        doNothing().when(trainerRepository).delete(trainer);
 
-        // Act
         trainerService.deleteById(1L);
 
-        // Assert
-        verify(trainerDao, times(1)).deleteById(1L);
-    }
-
-
-    @Test
-    void shouldUpdateTrainer() {
-        // Arrange
-        Trainer existing = new Trainer();
-        existing.setId(1L);
-        User user = new User();
-        user.setFirstName("Mehmet");
-        user.setLastName("Yılmaz");
-        user.setUsername("Mehmet.Yılmaz");
-        user.setActive(true);
-        existing.setUser(user);
-        existing.setSpecialization("Fitness");
-
-        TrainerDto updateDto = new TrainerDto();
-        updateDto.setId(1L);
-        updateDto.setFirstName("Mehmetcan");
-        updateDto.setLastName("Yılmaz");
-        updateDto.setSpecialization("Pilates");
-        updateDto.setActive(false);
-
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(existing));
-        doNothing().when(trainerDao).update(any(Trainer.class));
-
-        // Act
-        trainerService.update(updateDto);
-
-        // Assert
-        verify(trainerDao, times(1)).findById(1L);
-        verify(trainerDao, times(1)).update(any(Trainer.class));
-    }
-
-
-    @Test
-    void shouldThrowExceptionWhenUpdateTrainerNotFound() {
-        // Arrange
-        TrainerDto updateDto = new TrainerDto();
-        updateDto.setId(99L);
-
-        when(trainerDao.findById(99L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(TrainerNotFoundException.class, () -> trainerService.update(updateDto));
-        verify(trainerDao, times(1)).findById(99L);
-        verify(trainerDao, never()).update(any(Trainer.class));
+        verify(trainerRepository).delete(trainer);
     }
 
     @Test
     void shouldReturnAllTrainers() {
-        // Arrange
-        Trainer t1 = new Trainer();
-        t1.setId(1L);
-        User user1 = new User();
-        user1.setFirstName("Mehmet");
-        user1.setLastName("Yılmaz");
-        user1.setUsername("Mehmet.Yılmaz");
-        t1.setUser(user1);
-
         Trainer t2 = new Trainer();
         t2.setId(2L);
         User user2 = new User();
         user2.setFirstName("Ayşe");
         user2.setLastName("Kaya");
-        user2.setUsername("Ayşe.Kaya");
+        user2.setUsername("ayse.kaya");
         t2.setUser(user2);
 
-        List<Trainer> trainers = List.of(t1, t2);
-        when(trainerDao.findAll()).thenReturn(trainers);
+        when(trainerRepository.findAllWithTrainees()).thenReturn(List.of(trainer, t2));
 
-        // Act
         List<TrainerDto> result = trainerService.findAll();
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Mehmet", result.get(0).getFirstName());
         assertEquals("Ayşe", result.get(1).getFirstName());
-        assertEquals("Mehmet.Yılmaz", result.get(0).getUsername());
-        assertEquals("Ayşe.Kaya", result.get(1).getUsername());
-        verify(trainerDao, times(1)).findAll();
+        assertEquals("mehmet.yilmaz", result.get(0).getUsername());
+        assertEquals("ayse.kaya", result.get(1).getUsername());
+        verify(trainerRepository).findAllWithTrainees();
     }
-*/
+
+    @Test
+    void shouldUpdateTrainerWithAllFields() {
+        TrainerDto dto = new TrainerDto();
+        dto.setId(5L);
+        dto.setFirstName("NewFirstName");
+        dto.setLastName("NewLastName");
+        dto.setActive(false);
+        dto.setSpecialization("NewSpecialization");
+
+        when(trainerRepository.findByIdWithTrainees(5L)).thenReturn(Optional.of(trainer));
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(i -> i.getArgument(0));
+
+        trainerService.update(dto);
+
+        String expectedUsername = UserUtils.generateUniqueUsername("NewFirstName", "NewLastName", userRepository);
+
+        assertEquals("NewFirstName", trainer.getUser().getFirstName());
+        assertEquals("NewLastName", trainer.getUser().getLastName());
+        assertEquals("NewSpecialization", trainer.getSpecialization());
+        assertFalse(trainer.getUser().getActive());
+        assertEquals(expectedUsername, trainer.getUser().getUsername());
+
+        verify(trainerRepository).save(any(Trainer.class));
+    }
+
+    @Test
+    void shouldThrowWhenTrainerNotFound() {
+        TrainerDto dto = new TrainerDto();
+        dto.setId(777L);
+
+        when(trainerRepository.findByIdWithTrainees(777L)).thenReturn(Optional.empty());
+
+        assertThrows(TrainerNotFoundException.class, () -> trainerService.update(dto));
+        verify(trainerRepository, never()).save(any(Trainer.class));
+    }
+
+    @Test
+    void shouldNotUpdateUsernameIfNotChanged() {
+        Trainer trainer = new Trainer();
+        trainer.setId(5L);
+        User user = new User();
+        user.setFirstName("OldFirstName");
+        user.setLastName("OldLastName");
+        user.setUsername("old.username");
+        trainer.setUser(user);
+
+        TrainerDto dto = new TrainerDto();
+        dto.setId(5L);
+        dto.setFirstName("OldFirstName");
+        dto.setLastName("OldLastName");
+
+        when(trainerRepository.findByIdWithTrainees(5L)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(i -> i.getArgument(0));
+
+        trainerService.update(dto);
+
+        assertEquals("old.username", trainer.getUser().getUsername());
+    }
+
 }

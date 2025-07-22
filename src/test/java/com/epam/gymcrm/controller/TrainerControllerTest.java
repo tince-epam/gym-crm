@@ -12,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -26,9 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith({MockitoExtension.class, SpringExtension.class})
-//@ContextConfiguration(classes = {AppConfig.class})
-@WebAppConfiguration
+@ExtendWith(MockitoExtension.class)
 class TrainerControllerTest {
 
     private MockMvc mockMvc;
@@ -39,7 +35,7 @@ class TrainerControllerTest {
     @InjectMocks
     private TrainerController trainerController;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -108,9 +104,11 @@ class TrainerControllerTest {
     @Test
     void shouldGetAllTrainers() throws Exception {
         TrainerDto t1 = new TrainerDto();
-        t1.setId(1L); t1.setFirstName("Jack");
+        t1.setId(1L);
+        t1.setFirstName("Jack");
         TrainerDto t2 = new TrainerDto();
-        t2.setId(2L); t2.setFirstName("Emma");
+        t2.setId(2L);
+        t2.setFirstName("Emma");
 
         when(trainerService.findAll()).thenReturn(List.of(t1, t2));
 

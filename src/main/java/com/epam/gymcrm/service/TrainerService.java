@@ -93,19 +93,41 @@ public class TrainerService {
 
         logger.info("Updating trainer: id={}, username={}", id, trainer.getUser().getUsername());
 
-        if (!Objects.isNull(trainerDto.getFirstName())) trainer.getUser().setFirstName(trainerDto.getFirstName());
-        if (!Objects.isNull(trainerDto.getLastName())) trainer.getUser().setLastName(trainerDto.getLastName());
-        if (!Objects.isNull(trainerDto.getActive())) trainer.getUser().setActive(trainerDto.getActive());
+        String oldFirstName = trainer.getUser().getFirstName();
+        String oldLastName = trainer.getUser().getLastName();
 
-        if (trainerDto.getSpecialization() != null) trainer.setSpecialization(trainerDto.getSpecialization());
+        // Update first name, last name, active status if present in DTO
+        if (Objects.nonNull(trainerDto.getFirstName())) {
+            trainer.getUser().setFirstName(trainerDto.getFirstName());
+        }
+        if (Objects.nonNull(trainerDto.getLastName())) {
+            trainer.getUser().setLastName(trainerDto.getLastName());
+        }
+        if (Objects.nonNull(trainerDto.getActive())) {
+            trainer.getUser().setActive(trainerDto.getActive());
+        }
 
-        String updatedUsername = UserUtils.generateUniqueUsername(trainerDto.getFirstName(), trainerDto.getLastName(), userRepository);
-        if (!updatedUsername.equals(trainer.getUser().getUsername())) {
-            trainer.getUser().setUsername(updatedUsername);
+        // Update specialization if present
+        if (trainerDto.getSpecialization() != null) {
+            trainer.setSpecialization(trainerDto.getSpecialization());
+        }
+
+        // Check if first name or last name has changed, then update username accordingly
+        boolean nameChanged =
+                (Objects.nonNull(trainerDto.getFirstName()) && !Objects.equals(trainerDto.getFirstName(), oldFirstName)) ||
+                        (Objects.nonNull(trainerDto.getLastName()) && !Objects.equals(trainerDto.getLastName(), oldLastName));
+
+        if (nameChanged) {
+            String newFirstName = Objects.nonNull(trainerDto.getFirstName()) ? trainerDto.getFirstName() : oldFirstName;
+            String newLastName = Objects.nonNull(trainerDto.getLastName()) ? trainerDto.getLastName() : oldLastName;
+            String newUsername = UserUtils.generateUniqueUsername(newFirstName, newLastName, userRepository);
+            trainer.getUser().setUsername(newUsername);
         }
 
         Trainer updatedTrainer = trainerRepository.save(trainer);
 
         logger.info("Trainer updated: id={}, username={}", updatedTrainer.getId(), updatedTrainer.getUser().getUsername());
     }
+
+
 }

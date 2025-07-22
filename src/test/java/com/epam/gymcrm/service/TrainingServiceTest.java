@@ -7,6 +7,11 @@ import com.epam.gymcrm.domain.TrainingType;
 import com.epam.gymcrm.dto.TrainingDto;
 import com.epam.gymcrm.exception.*;
 import com.epam.gymcrm.mapper.TrainingMapper;
+import com.epam.gymcrm.repository.TraineeRepository;
+import com.epam.gymcrm.repository.TrainerRepository;
+import com.epam.gymcrm.repository.TrainingRepository;
+import com.epam.gymcrm.repository.TrainingTypeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,22 +30,26 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceTest {
 
-    /*@Mock
-    private TrainingDao trainingDao;
     @Mock
-    private TrainerDao trainerDao;
+    TrainingRepository trainingRepository;
     @Mock
-    private TraineeDao traineeDao;
+    TrainerRepository trainerRepository;
     @Mock
-    private TrainingTypeDao trainingTypeDao;
-
+    TraineeRepository traineeRepository;
+    @Mock
+    TrainingTypeRepository trainingTypeRepository;
     @InjectMocks
-    private TrainingService trainingService;
+    TrainingService trainingService;
 
+    TrainingDto dto;
+    Trainer trainer;
+    Trainee trainee;
+    TrainingType trainingType;
+    Training training;
 
-    @Test
-    void shouldCreateTraining() {
-        TrainingDto dto = new TrainingDto();
+    @BeforeEach
+    void setUp() {
+        dto = new TrainingDto();
         dto.setTrainerId(1L);
         dto.setTraineeId(2L);
         dto.setTrainingTypeId(3L);
@@ -48,249 +57,201 @@ class TrainingServiceTest {
         dto.setTrainingDate(LocalDateTime.of(2025, 7, 14, 10, 0));
         dto.setTrainingDuration(60);
 
-        Trainer trainer = new Trainer(); trainer.setId(1L);
-        Trainee trainee = new Trainee(); trainee.setId(2L);
-        TrainingType trainingType = new TrainingType(); trainingType.setId(3L);
+        trainer = new Trainer();
+        trainer.setId(1L);
+        trainee = new Trainee();
+        trainee.setId(2L);
+        trainingType = new TrainingType();
+        trainingType.setId(3L);
 
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(traineeDao.findById(2L)).thenReturn(Optional.of(trainee));
-        when(trainingTypeDao.findById(3L)).thenReturn(Optional.of(trainingType));
-        when(trainingDao.findAll()).thenReturn(Collections.emptyList());
-
-        Training training = TrainingMapper.toTraining(dto);
+        training = TrainingMapper.toTraining(dto);
         training.setId(1L);
-        when(trainingDao.save(any(Training.class))).thenReturn(training);
+        training.setTrainer(trainer);
+        training.setTrainee(trainee);
+        training.setTrainingType(trainingType);
+    }
+
+    @Test
+    void shouldCreateTraining() {
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+        when(trainingTypeRepository.findById(3L)).thenReturn(Optional.of(trainingType));
+        when(trainingRepository.findAll()).thenReturn(Collections.emptyList());
+        when(trainingRepository.save(any(Training.class))).thenAnswer(inv -> {
+            Training t = inv.getArgument(0);
+            t.setId(10L);
+            return t;
+        });
 
         TrainingDto result = trainingService.createTraining(dto);
 
         assertNotNull(result);
         assertEquals("Cardio", result.getTrainingName());
-        verify(trainingDao, times(1)).save(any(Training.class));
+        verify(trainingRepository).save(any(Training.class));
     }
 
     @Test
     void shouldThrowIfTrainerNotFound() {
-        TrainingDto dto = new TrainingDto();
-        dto.setTrainerId(1L);
-        when(trainerDao.findById(1L)).thenReturn(Optional.empty());
-
-        Exception ex = assertThrows(TrainerNotFoundException.class, () -> trainingService.createTraining(dto));
-        assertTrue(ex.getMessage().contains("Trainer not found"));
+        when(trainerRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(TrainerNotFoundException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
     void shouldThrowIfTraineeNotFoundWhenCreate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setTrainerId(1L);
-        dto.setTraineeId(2L);
-        dto.setTrainingTypeId(3L);
-
-        Trainer trainer = new Trainer(); trainer.setId(1L);
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(traineeDao.findById(2L)).thenReturn(Optional.empty());
-
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(2L)).thenReturn(Optional.empty());
         assertThrows(TraineeNotFoundException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
     void shouldThrowIfTrainingTypeNotFoundWhenCreate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setTrainerId(1L);
-        dto.setTraineeId(2L);
-        dto.setTrainingTypeId(3L);
-
-        Trainer trainer = new Trainer(); trainer.setId(1L);
-        Trainee trainee = new Trainee(); trainee.setId(2L);
-
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(traineeDao.findById(2L)).thenReturn(Optional.of(trainee));
-        when(trainingTypeDao.findById(3L)).thenReturn(Optional.empty());
-
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+        when(trainingTypeRepository.findById(3L)).thenReturn(Optional.empty());
         assertThrows(TrainingTypeNotFoundException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
     void shouldThrowIfTrainerScheduleConflict() {
-        TrainingDto dto = new TrainingDto();
-        dto.setTrainerId(1L);
-        dto.setTraineeId(2L);
-        dto.setTrainingTypeId(3L);
-        dto.setTrainingName("Cardio");
-        LocalDateTime trainingDate = LocalDateTime.of(2025, 7, 14, 10, 0);
-        dto.setTrainingDate(trainingDate);
-
-        Trainer trainer = new Trainer(); trainer.setId(1L);
-        Trainee trainee = new Trainee(); trainee.setId(2L);
-        TrainingType trainingType = new TrainingType(); trainingType.setId(3L);
-
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(traineeDao.findById(2L)).thenReturn(Optional.of(trainee));
-        when(trainingTypeDao.findById(3L)).thenReturn(Optional.of(trainingType));
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+        when(trainingTypeRepository.findById(3L)).thenReturn(Optional.of(trainingType));
 
         Training existing = new Training();
-        existing.setId(1L);
-//        existing.setTrainerId(1L);
-        existing.setTrainingDate(trainingDate);
-
-        when(trainingDao.findAll()).thenReturn(List.of(existing));
+        existing.setId(11L);
+        existing.setTrainer(trainer);
+        existing.setTrainingDate(dto.getTrainingDate());
+        when(trainingRepository.findAll()).thenReturn(List.of(existing));
 
         assertThrows(TrainerScheduleConflictException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
     void shouldFindById() {
-        Training training = new Training();
-        training.setId(1L);
-        training.setTrainingName("Strength");
-//        training.setTrainerId(1L);
-//        training.setTraineeId(2L);
-//        training.setTrainingTypeId(3L);
-        training.setTrainingDate(LocalDateTime.of(2025, 7, 14, 10, 0));
-        training.setTrainingDuration(60);
-
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(training));
-
-        TrainingDto dto = trainingService.findById(1L);
-
-        assertNotNull(dto);
-        assertEquals("Strength", dto.getTrainingName());
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        TrainingDto result = trainingService.findById(1L);
+        assertNotNull(result);
+        assertEquals("Cardio", result.getTrainingName());
     }
 
     @Test
     void shouldThrowIfTrainingNotFoundById() {
-        when(trainingDao.findById(77L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(77L)).thenReturn(Optional.empty());
         assertThrows(TrainingNotFoundException.class, () -> trainingService.findById(77L));
     }
 
     @Test
     void shouldFindAllTrainings() {
-        Training training1 = new Training(); training1.setId(1L);
-        Training training2 = new Training(); training2.setId(2L);
-        when(trainingDao.findAll()).thenReturn(List.of(training1, training2));
-
+        Training t1 = new Training();
+        t1.setId(1L);
+        Training t2 = new Training();
+        t2.setId(2L);
+        when(trainingRepository.findAll()).thenReturn(List.of(t1, t2));
         List<TrainingDto> list = trainingService.findAll();
         assertEquals(2, list.size());
     }
 
     @Test
     void shouldDeleteTraining() {
-        Training training = new Training();
-        training.setId(1L);
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(training));
-        doNothing().when(trainingDao).deleteById(1L);
-
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        doNothing().when(trainingRepository).delete(training);
         trainingService.deleteById(1L);
-
-        verify(trainingDao, times(1)).findById(1L);
-        verify(trainingDao, times(1)).deleteById(1L);
+        verify(trainingRepository).delete(training);
     }
 
     @Test
     void shouldThrowWhenDeleteByIdIfTrainingNotFound() {
-        when(trainingDao.findById(99L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(TrainingNotFoundException.class, () -> trainingService.deleteById(99L));
     }
 
     @Test
     void shouldUpdateTraining() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(1L);
-        dto.setTrainingName("Updated Training");
-        dto.setTrainerId(1L);
-        dto.setTraineeId(2L);
-        dto.setTrainingTypeId(3L);
-        dto.setTrainingDate(LocalDateTime.of(2025, 7, 15, 10, 0));
-        dto.setTrainingDuration(80);
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(1L);
+        updateDto.setTrainingName("Updated Training");
+        updateDto.setTrainerId(1L);
+        updateDto.setTraineeId(2L);
+        updateDto.setTrainingTypeId(3L);
+        updateDto.setTrainingDate(LocalDateTime.of(2025, 7, 15, 10, 0));
+        updateDto.setTrainingDuration(80);
 
-        Training existing = new Training();
-        existing.setId(1L);
-        existing.setTrainingName("Old Name");
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+        when(trainingTypeRepository.findById(3L)).thenReturn(Optional.of(trainingType));
+        when(trainingRepository.findAll()).thenReturn(List.of(training));
+        when(trainingRepository.save(any(Training.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Trainer trainer = new Trainer(); trainer.setId(1L);
-        Trainee trainee = new Trainee(); trainee.setId(2L);
-        TrainingType trainingType = new TrainingType(); trainingType.setId(3L);
+        trainingService.update(updateDto);
 
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(existing));
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(traineeDao.findById(2L)).thenReturn(Optional.of(trainee));
-        when(trainingTypeDao.findById(3L)).thenReturn(Optional.of(trainingType));
-        when(trainingDao.findAll()).thenReturn(List.of(existing));
-        doNothing().when(trainingDao).update(any(Training.class));
-
-        trainingService.update(dto);
-
-        assertEquals("Updated Training", existing.getTrainingName());
-        verify(trainingDao, times(1)).update(any(Training.class));
+        assertEquals("Updated Training", training.getTrainingName());
+        verify(trainingRepository).save(any(Training.class));
     }
 
     @Test
     void shouldThrowIfTrainingNotFoundWhenUpdate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(111L);
-        when(trainingDao.findById(111L)).thenReturn(Optional.empty());
-
-        assertThrows(TrainingNotFoundException.class, () -> trainingService.update(dto));
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(111L);
+        when(trainingRepository.findById(111L)).thenReturn(Optional.empty());
+        assertThrows(TrainingNotFoundException.class, () -> trainingService.update(updateDto));
     }
 
     @Test
     void shouldThrowIfTrainerNotFoundDuringUpdate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(1L);
-        dto.setTrainerId(5L);
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(1L);
+        updateDto.setTrainerId(5L);
 
-        Training existing = new Training(); existing.setId(1L);
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(existing));
-        when(trainerDao.findById(5L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        when(trainerRepository.findById(5L)).thenReturn(Optional.empty());
 
-        assertThrows(TrainerNotFoundException.class, () -> trainingService.update(dto));
+        assertThrows(TrainerNotFoundException.class, () -> trainingService.update(updateDto));
     }
 
     @Test
     void shouldThrowIfTraineeNotFoundDuringUpdate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(1L);
-        dto.setTraineeId(22L);
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(1L);
+        updateDto.setTraineeId(22L);
 
-        Training existing = new Training(); existing.setId(1L);
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(existing));
-        when(traineeDao.findById(22L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        when(traineeRepository.findById(22L)).thenReturn(Optional.empty());
 
-        assertThrows(TraineeNotFoundException.class, () -> trainingService.update(dto));
+        assertThrows(TraineeNotFoundException.class, () -> trainingService.update(updateDto));
     }
 
     @Test
     void shouldThrowIfTrainingTypeNotFoundDuringUpdate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(1L);
-        dto.setTrainingTypeId(33L);
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(1L);
+        updateDto.setTrainingTypeId(33L);
 
-        Training existing = new Training(); existing.setId(1L);
-        when(trainingDao.findById(1L)).thenReturn(Optional.of(existing));
-        when(trainingTypeDao.findById(33L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        when(trainingTypeRepository.findById(33L)).thenReturn(Optional.empty());
 
-        assertThrows(TrainingTypeNotFoundException.class, () -> trainingService.update(dto));
+        assertThrows(TrainingTypeNotFoundException.class, () -> trainingService.update(updateDto));
     }
 
     @Test
     void shouldThrowIfTrainerScheduleConflictDuringUpdate() {
-        TrainingDto dto = new TrainingDto();
-        dto.setId(2L);
-        dto.setTrainerId(1L);
-        dto.setTrainingDate(LocalDateTime.of(2025, 7, 15, 10, 0));
+        TrainingDto updateDto = new TrainingDto();
+        updateDto.setId(2L);
+        updateDto.setTrainerId(1L);
+        updateDto.setTrainingDate(LocalDateTime.of(2025, 7, 15, 10, 0));
 
-        Training existing = new Training(); existing.setId(2L);
+        Training existing = new Training();
+        existing.setId(2L);
 
         Training other = new Training();
         other.setId(3L);
-//        other.setTrainerId(1L);
-        other.setTrainingDate(dto.getTrainingDate());
+        other.setTrainer(trainer);
+        other.setTrainingDate(updateDto.getTrainingDate());
 
-        Trainer trainer = new Trainer(); trainer.setId(1L);
+        when(trainingRepository.findById(2L)).thenReturn(Optional.of(existing));
+        when(trainerRepository.findById(1L)).thenReturn(Optional.of(trainer));
+        when(trainingRepository.findAll()).thenReturn(List.of(existing, other));
 
-        when(trainingDao.findById(2L)).thenReturn(Optional.of(existing));
-        when(trainerDao.findById(1L)).thenReturn(Optional.of(trainer));
-        when(trainingDao.findAll()).thenReturn(List.of(existing, other));
-
-        assertThrows(TrainerScheduleConflictException.class, () -> trainingService.update(dto));
-    }*/
+        assertThrows(TrainerScheduleConflictException.class, () -> trainingService.update(updateDto));
+    }
 }

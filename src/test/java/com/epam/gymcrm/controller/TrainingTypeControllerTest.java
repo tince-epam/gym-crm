@@ -12,27 +12,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith({MockitoExtension.class, SpringExtension.class})
-//@ContextConfiguration(classes = {AppConfig.class})
-@WebAppConfiguration
+@ExtendWith(MockitoExtension.class)
 class TrainingTypeControllerTest {
 
-    /*private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Mock
     private TrainingTypeService trainingTypeService;
@@ -40,8 +33,7 @@ class TrainingTypeControllerTest {
     @InjectMocks
     private TrainingTypeController trainingTypeController;
 
-    private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    ;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @BeforeEach
     void setUp() {
@@ -52,36 +44,17 @@ class TrainingTypeControllerTest {
     }
 
     @Test
-    void shouldCreateTrainingType() throws Exception {
-        TrainingTypeDto request = new TrainingTypeDto();
-        request.setName("Crossfit");
-
-        TrainingTypeDto response = new TrainingTypeDto();
-        response.setId(12L);
-        response.setName("Crossfit");
-
-        when(trainingTypeService.create(any(TrainingTypeDto.class))).thenReturn(response);
-
-        mockMvc.perform(post("/api/v1/training-types")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(12))
-                .andExpect(jsonPath("$.name").value("Crossfit"));
-    }
-
-    @Test
     void shouldGetTrainingTypeById() throws Exception {
         TrainingTypeDto response = new TrainingTypeDto();
         response.setId(7L);
-        response.setName("Yoga");
+        response.setTrainingTypeName("Yoga");
 
         when(trainingTypeService.findById(7L)).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/training-types/7"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(7))
-                .andExpect(jsonPath("$.name").value("Yoga"));
+                .andExpect(jsonPath("$.trainingTypeName").value("Yoga"));
     }
 
     @Test
@@ -101,10 +74,10 @@ class TrainingTypeControllerTest {
     void shouldGetAllTrainingTypes() throws Exception {
         TrainingTypeDto t1 = new TrainingTypeDto();
         t1.setId(1L);
-        t1.setName("TypeA");
+        t1.setTrainingTypeName("TypeA");
         TrainingTypeDto t2 = new TrainingTypeDto();
         t2.setId(2L);
-        t2.setName("TypeB");
+        t2.setTrainingTypeName("TypeB");
 
         when(trainingTypeService.findAll()).thenReturn(List.of(t1, t2));
 
@@ -112,38 +85,4 @@ class TrainingTypeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
-
-    @Test
-    void shouldUpdateTrainingType() throws Exception {
-        TrainingTypeDto request = new TrainingTypeDto();
-        request.setName("Updated Name");
-
-        doNothing().when(trainingTypeService).update(any(TrainingTypeDto.class));
-
-        mockMvc.perform(put("/api/v1/training-types/11")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void shouldDeleteTrainingType() throws Exception {
-        doNothing().when(trainingTypeService).deleteById(13L);
-
-        mockMvc.perform(delete("/api/v1/training-types/13"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenValidationFails() throws Exception {
-        TrainingTypeDto invalidRequest = new TrainingTypeDto();
-        mockMvc.perform(post("/api/v1/training-types")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").value("Validation Error"))
-                .andExpect(jsonPath("$.details").isArray());
-    }*/
 }

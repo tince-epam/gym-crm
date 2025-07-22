@@ -3,7 +3,8 @@ package com.epam.gymcrm.service;
 import com.epam.gymcrm.domain.TrainingType;
 import com.epam.gymcrm.dto.TrainingTypeDto;
 import com.epam.gymcrm.exception.TrainingTypeNotFoundException;
-import com.epam.gymcrm.mapper.TrainingTypeMapper;
+import com.epam.gymcrm.repository.TrainingTypeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,142 +15,62 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TrainingTypeServiceTest {
 
-    /*@Mock
-    private TrainingTypeDao trainingTypeDao;
+    @Mock
+    private TrainingTypeRepository trainingTypeRepository;
 
     @InjectMocks
     private TrainingTypeService trainingTypeService;
 
-    @Test
-    void shouldCreateTrainingType() {
-        // Arrange
-        TrainingTypeDto dto = new TrainingTypeDto();
-        dto.setName("Yoga");
+    TrainingType type1, type2;
+    TrainingTypeDto updateDto;
 
-        TrainingType type = TrainingTypeMapper.toTrainingType(dto);
-        type.setId(1L);
+    @BeforeEach
+    void setUp() {
+        type1 = new TrainingType();
+        type1.setId(1L);
+        type1.setTrainingTypeName("Yoga");
 
-        when(trainingTypeDao.save(any(TrainingType.class))).thenReturn(type);
+        type2 = new TrainingType();
+        type2.setId(2L);
+        type2.setTrainingTypeName("Pilates");
 
-        // Act
-        TrainingTypeDto result = trainingTypeService.create(dto);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Yoga", result.getName());
-        verify(trainingTypeDao, times(1)).save(any(TrainingType.class));
+        updateDto = new TrainingTypeDto();
+        updateDto.setId(1L);
+        updateDto.setTrainingTypeName("Updated Yoga");
     }
 
     @Test
     void shouldFindTrainingTypeById() {
-        // Arrange
-        TrainingType type = new TrainingType();
-        type.setId(1L);
-        type.setTrainingTypeName("Yoga");
-
-        when(trainingTypeDao.findById(1L)).thenReturn(Optional.of(type));
-
-        // Act
+        when(trainingTypeRepository.findById(1L)).thenReturn(Optional.of(type1));
         TrainingTypeDto result = trainingTypeService.findById(1L);
 
-        // Assert
         assertNotNull(result);
-        assertEquals("Yoga", result.getName());
-        verify(trainingTypeDao, times(1)).findById(1L);
+        assertEquals("Yoga", result.getTrainingTypeName());
+        verify(trainingTypeRepository).findById(1L);
     }
 
     @Test
     void shouldThrowExceptionWhenTrainingTypeNotFound() {
-        // Arrange
-        when(trainingTypeDao.findById(100L)).thenReturn(Optional.empty());
-
-        // Act & Assert
+        when(trainingTypeRepository.findById(100L)).thenReturn(Optional.empty());
         assertThrows(TrainingTypeNotFoundException.class, () -> trainingTypeService.findById(100L));
-        verify(trainingTypeDao, times(1)).findById(100L);
+        verify(trainingTypeRepository).findById(100L);
     }
 
     @Test
     void shouldReturnAllTrainingTypes() {
-        // Arrange
-        TrainingType t1 = new TrainingType();
-        t1.setId(1L);
-        t1.setTrainingTypeName("Yoga");
-        TrainingType t2 = new TrainingType();
-        t2.setId(2L);
-        t2.setTrainingTypeName("Pilates");
-
-        List<TrainingType> types = List.of(t1, t2);
-        when(trainingTypeDao.findAll()).thenReturn(types);
-
-        // Act
+        when(trainingTypeRepository.findAll()).thenReturn(List.of(type1, type2));
         List<TrainingTypeDto> result = trainingTypeService.findAll();
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("Yoga", result.get(0).getName());
-        assertEquals("Pilates", result.get(1).getName());
-        verify(trainingTypeDao, times(1)).findAll();
+        assertEquals("Yoga", result.get(0).getTrainingTypeName());
+        assertEquals("Pilates", result.get(1).getTrainingTypeName());
+        verify(trainingTypeRepository).findAll();
     }
-
-    @Test
-    void shouldUpdateTrainingType() {
-        // Arrange
-        TrainingType existing = new TrainingType();
-        existing.setId(1L);
-        existing.setTrainingTypeName("Yoga");
-
-        TrainingTypeDto updateDto = new TrainingTypeDto();
-        updateDto.setId(1L);
-        updateDto.setName("Power Yoga");
-
-        when(trainingTypeDao.findById(1L)).thenReturn(Optional.of(existing));
-        doNothing().when(trainingTypeDao).update(any(TrainingType.class));
-
-        // Act
-        trainingTypeService.update(updateDto);
-
-        // Assert
-        verify(trainingTypeDao, times(1)).findById(1L);
-        verify(trainingTypeDao, times(1)).update(any(TrainingType.class));
-        assertEquals("Power Yoga", existing.getTrainingTypeName());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUpdateTrainingTypeNotFound() {
-        // Arrange
-        TrainingTypeDto updateDto = new TrainingTypeDto();
-        updateDto.setId(99L);
-        updateDto.setName("Crossfit");
-
-        when(trainingTypeDao.findById(99L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(TrainingTypeNotFoundException.class, () -> trainingTypeService.update(updateDto));
-        verify(trainingTypeDao, times(1)).findById(99L);
-        verify(trainingTypeDao, never()).update(any(TrainingType.class));
-    }
-
-    @Test
-    void shouldDeleteTrainingType() {
-        // Arrange
-        TrainingType type = new TrainingType();
-        type.setId(1L);
-        type.setTrainingTypeName("Yoga");
-        when(trainingTypeDao.findById(1L)).thenReturn(Optional.of(type));
-        doNothing().when(trainingTypeDao).deleteById(1L);
-
-        // Act
-        trainingTypeService.deleteById(1L);
-
-        // Assert
-        verify(trainingTypeDao, times(1)).findById(1L);
-        verify(trainingTypeDao, times(1)).deleteById(1L);
-    }*/
 }

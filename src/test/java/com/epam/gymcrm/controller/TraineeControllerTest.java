@@ -13,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -27,9 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith({MockitoExtension.class, SpringExtension.class})
-//@ContextConfiguration(classes = {AppConfig.class})
-@WebAppConfiguration
+@ExtendWith(MockitoExtension.class)
 class TraineeControllerTest {
 
     private MockMvc mockMvc;
@@ -40,7 +36,7 @@ class TraineeControllerTest {
     @InjectMocks
     private TraineeController traineeController;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -108,9 +104,11 @@ class TraineeControllerTest {
     @Test
     void shouldGetAllTrainees() throws Exception {
         TraineeDto t1 = new TraineeDto();
-        t1.setId(1L); t1.setUsername("John.Doe");
+        t1.setId(1L);
+        t1.setUsername("John.Doe");
         TraineeDto t2 = new TraineeDto();
-        t2.setId(2L); t2.setUsername("Jane.Smith");
+        t2.setId(2L);
+        t2.setUsername("Jane.Smith");
 
         when(traineeService.findAll()).thenReturn(List.of(t1, t2));
 

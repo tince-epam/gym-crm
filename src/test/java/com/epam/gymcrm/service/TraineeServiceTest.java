@@ -4,7 +4,10 @@ import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
-import com.epam.gymcrm.mapper.TraineeMapper;
+import com.epam.gymcrm.repository.TraineeRepository;
+import com.epam.gymcrm.repository.TrainerRepository;
+import com.epam.gymcrm.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,182 +25,129 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceTest {
 
-   /* @Mock
-    private TraineeDao traineeDao;
+    @Mock
+    private TraineeRepository traineeRepository;
+    @Mock
+    private TrainerRepository trainerRepository;
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private TraineeService traineeService;
 
-    @Test
-    void shouldCreateTrainee() {
-        // Arrange
-        TraineeDto traineeDto = new TraineeDto();
+    private TraineeDto traineeDto;
+    private Trainee trainee;
+
+    @BeforeEach
+    void setUp() {
+        traineeDto = new TraineeDto();
+        traineeDto.setId(1L);
         traineeDto.setFirstName("Ali");
         traineeDto.setLastName("Veli");
         traineeDto.setAddress("Istanbul");
         traineeDto.setDateOfBirth("1990-01-01");
 
-        Trainee trainee = TraineeMapper.toTrainee(traineeDto);
-        trainee.setId(1L);
         User user = new User();
+        user.setId(10L);
         user.setFirstName("Ali");
         user.setLastName("Veli");
-        user.setUsername("Ali.Veli");
-        user.setPassword("password123");
+        user.setUsername("ali.veli");
         user.setActive(true);
+
+        trainee = new Trainee();
+        trainee.setId(1L);
         trainee.setUser(user);
+        trainee.setAddress("Istanbul");
+        trainee.setDateOfBirth(LocalDate.parse("1990-01-01"));
+    }
 
-        when(traineeDao.save(any(Trainee.class))).thenReturn(trainee);
+    @Test
+    void shouldCreateTrainee() {
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(invocation -> {
+            Trainee t = invocation.getArgument(0);
+            t.setId(99L);
+            t.getUser().setId(100L);
+            return t;
+        });
 
-        // Act
         TraineeDto result = traineeService.createTrainee(traineeDto);
 
-        // Assert
         assertNotNull(result);
         assertEquals("Ali", result.getFirstName());
         assertEquals("Veli", result.getLastName());
-        assertEquals("Ali.Veli", result.getUsername()); // Username assert’i
-        verify(traineeDao, times(1)).save(any(Trainee.class));
+        assertEquals("Istanbul", result.getAddress());
+        assertNotNull(result.getUsername());
+        verify(traineeRepository).save(any(Trainee.class));
     }
 
     @Test
     void shouldUpdateTrainee() {
-        // Arrange
-        Trainee existing = new Trainee();
-        existing.setId(1L);
-        User user = new User();
-        user.setFirstName("Ali");
-        user.setLastName("Veli");
-        user.setUsername("Ali.Veli");
-        user.setActive(true);
-        existing.setUser(user);
-        existing.setAddress("Istanbul");
-        existing.setDateOfBirth(LocalDate.parse("1990-01-01"));
+        when(traineeRepository.findByIdWithTrainers(1L)).thenReturn(Optional.of(trainee));
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
-        TraineeDto updateDto = new TraineeDto();
-        updateDto.setId(1L);
-        updateDto.setFirstName("Mehmet");
-        updateDto.setLastName("Veli");
-        updateDto.setActive(false);
-        updateDto.setAddress("Ankara");
-        updateDto.setDateOfBirth("1988-12-31");
+        traineeDto.setFirstName("Mehmet");
+        traineeDto.setAddress("Ankara");
+        traineeDto.setDateOfBirth("1988-12-31");
 
-        when(traineeDao.findById(1L)).thenReturn(Optional.of(existing));
-        doNothing().when(traineeDao).update(any(Trainee.class));
+        traineeService.update(traineeDto);
 
-        // Act
-        traineeService.update(updateDto);
-
-        // Assert
-        verify(traineeDao, times(1)).findById(1L);
-        verify(traineeDao, times(1)).update(any(Trainee.class));
+        assertEquals("Mehmet", trainee.getUser().getFirstName());
+        assertEquals("Ankara", trainee.getAddress());
+        verify(traineeRepository).save(any(Trainee.class));
     }
-
 
     @Test
     void shouldThrowExceptionWhenUpdateTraineeNotFound() {
-        // Arrange
-        TraineeDto updateDto = new TraineeDto();
-        updateDto.setId(99L);
-
-        when(traineeDao.findById(99L)).thenReturn(Optional.empty());
-
-        // Assert & Act
-        assertThrows(TraineeNotFoundException.class, () -> traineeService.update(updateDto));
-        verify(traineeDao, times(1)).findById(99L);
-        verify(traineeDao, times(0)).update(any(Trainee.class));
+        when(traineeRepository.findByIdWithTrainers(anyLong())).thenReturn(Optional.empty());
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.update(traineeDto));
+        verify(traineeRepository).findByIdWithTrainers(anyLong());
     }
 
     @Test
     void shouldFindTraineeById() {
-        // Arrange
-        Trainee trainee = new Trainee();
-        trainee.setId(1L);
+        when(traineeRepository.findByIdWithTrainers(1L)).thenReturn(Optional.of(trainee));
 
-        User user = new User();
-        user.setFirstName("Ali");
-        user.setLastName("Veli");
-        user.setUsername("Ali.Veli");
-        trainee.setUser(user);
-
-        when(traineeDao.findById(1L)).thenReturn(Optional.of(trainee));
-
-        // Act
         TraineeDto result = traineeService.findById(1L);
 
-        // Assert
         assertNotNull(result);
         assertEquals("Ali", result.getFirstName());
-        assertEquals("Veli", result.getLastName());
-        assertEquals("Ali.Veli", result.getUsername());
-        verify(traineeDao, times(1)).findById(1L);
+        verify(traineeRepository).findByIdWithTrainers(1L);
     }
 
     @Test
     void shouldThrowExceptionWhenTraineeNotFound() {
-        // Arrange
-        when(traineeDao.findById(100L)).thenReturn(Optional.empty());
-
-        // Assert & Act
+        when(traineeRepository.findByIdWithTrainers(anyLong())).thenReturn(Optional.empty());
         assertThrows(TraineeNotFoundException.class, () -> traineeService.findById(100L));
-        verify(traineeDao, times(1)).findById(100L);
+        verify(traineeRepository).findByIdWithTrainers(100L);
     }
 
     @Test
     void shouldDeleteTrainee() {
-        // Arrange
-        Trainee trainee = new Trainee();
-        trainee.setId(1L);
-        User user = new User();
-        user.setFirstName("Ali");
-        user.setLastName("Veli");
-        trainee.setUser(user);
-
-        when(traineeDao.findById(1L)).thenReturn(Optional.of(trainee));
-        doNothing().when(traineeDao).deleteById(1L);
-
-        // Act
+        when(traineeRepository.findByIdWithTrainers(1L)).thenReturn(Optional.of(trainee));
         traineeService.deleteById(1L);
-
-        // Assert
-        verify(traineeDao, times(1)).deleteById(1L);
+        verify(traineeRepository).delete(trainee);
     }
-
 
     @Test
     void shouldReturnAllTrainees() {
-        // Arrange
-        Trainee t1 = new Trainee();
-        t1.setId(1L);
-        User user1 = new User();
-        user1.setFirstName("Ali");
-        user1.setLastName("Veli");
-        user1.setUsername("Ali.Veli");
-        t1.setUser(user1);
-
+        Trainee t1 = trainee;
         Trainee t2 = new Trainee();
+        User u2 = new User();
+        u2.setFirstName("Ayşe");
+        u2.setLastName("Yılmaz");
+        u2.setUsername("ayse.yilmaz");
         t2.setId(2L);
-        User user2 = new User();
-        user2.setFirstName("Ayşe");
-        user2.setLastName("Yılmaz");
-        user2.setUsername("Ayşe.Yılmaz");
-        t2.setUser(user2);
+        t2.setUser(u2);
 
-        List<Trainee> traineeList = List.of(t1, t2);
-        when(traineeDao.findAll()).thenReturn(traineeList);
+        when(traineeRepository.findAllWithTrainers()).thenReturn(List.of(t1, t2));
 
-        // Act
         List<TraineeDto> result = traineeService.findAll();
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Ali", result.get(0).getFirstName());
         assertEquals("Ayşe", result.get(1).getFirstName());
-        assertEquals("Ali.Veli", result.get(0).getUsername());
-        assertEquals("Ayşe.Yılmaz", result.get(1).getUsername());
-        verify(traineeDao, times(1)).findAll();
+        verify(traineeRepository).findAllWithTrainers();
     }
-*/
-
 }
