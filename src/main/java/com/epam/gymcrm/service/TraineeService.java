@@ -4,6 +4,7 @@ import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
 import com.epam.gymcrm.repository.TraineeRepository;
@@ -143,5 +144,21 @@ public class TraineeService {
         traineeRepository.save(trainee);
 
         logger.info("Trainee updated: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
+    }
+
+    public boolean isTraineeCredentialsValid(String username, String password) {
+        Trainee trainee = traineeRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Login failed: No Trainee found with username '{}'. Credentials: [username='{}', password='***']", username, username);
+                    return new TraineeNotFoundException("Login failed: No Trainee found with username '" + username + "'");
+                });
+
+        if (!trainee.getUser().getPassword().equals(password)) {
+            logger.warn("Login failed: Invalid password for Trainee with username '{}'. Provided password: '***'", username);
+            throw new InvalidCredentialsException("Login failed: Invalid password for Trainee with username '" + username + "'");
+        }
+
+        logger.info("Login success: Trainee '{}' authenticated successfully.", username);
+        return Boolean.TRUE;
     }
 }

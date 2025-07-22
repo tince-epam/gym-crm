@@ -17,4 +17,6 @@ public interface TraineeRepository extends JpaRepository<Trainee, Long> {
 
     @Query("SELECT DISTINCT t FROM Trainee t LEFT JOIN FETCH t.trainers")
     List<Trainee> findAllWithTrainers();
+
+    Optional<Trainee> findByUserUsername(String username);
 }

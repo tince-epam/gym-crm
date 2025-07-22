@@ -4,6 +4,7 @@ import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
 import com.epam.gymcrm.repository.TrainerRepository;
@@ -129,5 +130,19 @@ public class TrainerService {
         logger.info("Trainer updated: id={}, username={}", updatedTrainer.getId(), updatedTrainer.getUser().getUsername());
     }
 
+    public boolean isTrainerCredentialsValid(String username, String password) {
+        Trainer trainer = trainerRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Login failed: No Trainer found with username '{}'. Credentials: [username='{}', password='***']", username, username);
+                    return new TrainerNotFoundException("Login failed: No Trainer found with username '" + username + "'");
+                });
 
+        if (!trainer.getUser().getPassword().equals(password)) {
+            logger.warn("Login failed: Invalid password for Trainer with username '{}'. Provided password: '***'", username);
+            throw new InvalidCredentialsException("Login failed: Invalid password for Trainer with username '" + username + "'");
+        }
+
+        logger.info("Login success: Trainer '{}' authenticated successfully.", username);
+        return Boolean.TRUE;
+    }
 }

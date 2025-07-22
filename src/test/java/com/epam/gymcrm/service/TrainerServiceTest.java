@@ -3,6 +3,7 @@ package com.epam.gymcrm.service;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
 import com.epam.gymcrm.repository.TrainerRepository;
@@ -188,6 +189,46 @@ class TrainerServiceTest {
         trainerService.update(dto);
 
         assertEquals("old.username", trainer.getUser().getUsername());
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialsExceptionWhenTrainerNotFound() {
+        User user = new User();
+        user.setUsername("user1");
+        user.setPassword("correct_pw");
+        Trainer t = new Trainer();
+        t.setUser(user);
+        when(trainerRepository.findByUserUsername("user1")).thenReturn(Optional.of(trainer));
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                trainerService.isTrainerCredentialsValid("user1", "wrong_pw"));
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialsExceptionWhenTrainerPasswordIncorrect() {
+        User user = new User();
+        user.setUsername("trainer1");
+        user.setPassword("correct_pw");
+        Trainer trainer = new Trainer();
+        trainer.setUser(user);
+
+        when(trainerRepository.findByUserUsername("trainer1")).thenReturn(Optional.of(trainer));
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                trainerService.isTrainerCredentialsValid("trainer1", "wrong_pw"));
+    }
+
+    @Test
+    void shouldReturnTrueWhenTrainerCredentialsAreValid() {
+        User user = new User();
+        user.setUsername("trainer1");
+        user.setPassword("correct_pw");
+        Trainer trainer = new Trainer();
+        trainer.setUser(user);
+
+        when(trainerRepository.findByUserUsername("trainer1")).thenReturn(Optional.of(trainer));
+
+        assertTrue(trainerService.isTrainerCredentialsValid("trainer1", "correct_pw"));
     }
 
 }

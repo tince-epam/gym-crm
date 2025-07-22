@@ -3,6 +3,7 @@ package com.epam.gymcrm.service;
 import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;
@@ -149,5 +150,44 @@ class TraineeServiceTest {
         assertEquals("Ali", result.get(0).getFirstName());
         assertEquals("Ayşe", result.get(1).getFirstName());
         verify(traineeRepository).findAllWithTrainers();
+    }
+
+    @Test
+    void shouldAuthenticateTraineeWithValidCredentials() {
+        User user = new User();
+        user.setUsername("testuser");
+        user.setPassword("secret");
+        Trainee trainee = new Trainee();
+        trainee.setUser(user);
+        when(traineeRepository.findByUserUsername("testuser")).thenReturn(Optional.of(trainee));
+
+        assertTrue(traineeService.isTraineeCredentialsValid("testuser", "secret"));
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialsExceptionWithWrongPassword() {
+        User user = new User();
+        user.setUsername("testuser");
+        user.setPassword("secret");
+        Trainee trainee = new Trainee();
+        trainee.setUser(user);
+        when(traineeRepository.findByUserUsername("testuser")).thenReturn(Optional.of(trainee));
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                traineeService.isTraineeCredentialsValid("testuser", "wrongpw"));
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialsExceptionWhenUserNotFound() {
+        User user = new User();
+        user.setUsername("user1");
+        user.setPassword("correct_pw");
+        Trainee trainee = new Trainee();
+        trainee.setUser(user);
+
+        when(traineeRepository.findByUserUsername("user1")).thenReturn(Optional.of(trainee));
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                traineeService.isTraineeCredentialsValid("user1", "wrong_pw"));
     }
 }

@@ -37,6 +37,10 @@ class TrainerControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // Example test credentials for headers
+    private static final String USERNAME = "test.user";
+    private static final String PASSWORD = "test.pass";
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
@@ -80,7 +84,9 @@ class TrainerControllerTest {
 
         when(trainerService.findById(20L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/trainers/20"))
+        mockMvc.perform(get("/api/v1/trainers/20")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(20))
                 .andExpect(jsonPath("$.firstName").value("Emma"))
@@ -93,13 +99,14 @@ class TrainerControllerTest {
         when(trainerService.findById(notFoundId))
                 .thenThrow(new TrainerNotFoundException("Trainer not found with id: " + notFoundId));
 
-        mockMvc.perform(get("/api/v1/trainers/" + notFoundId))
+        mockMvc.perform(get("/api/v1/trainers/" + notFoundId)
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Trainer Not Found"))
                 .andExpect(jsonPath("$.message").value("Trainer not found with id: " + notFoundId));
     }
-
 
     @Test
     void shouldGetAllTrainers() throws Exception {
@@ -112,7 +119,9 @@ class TrainerControllerTest {
 
         when(trainerService.findAll()).thenReturn(List.of(t1, t2));
 
-        mockMvc.perform(get("/api/v1/trainers"))
+        mockMvc.perform(get("/api/v1/trainers")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -127,6 +136,8 @@ class TrainerControllerTest {
         doNothing().when(trainerService).update(any(TrainerDto.class));
 
         mockMvc.perform(put("/api/v1/trainers/5")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
@@ -136,7 +147,9 @@ class TrainerControllerTest {
     void shouldDeleteTrainer() throws Exception {
         doNothing().when(trainerService).deleteById(7L);
 
-        mockMvc.perform(delete("/api/v1/trainers/7"))
+        mockMvc.perform(delete("/api/v1/trainers/7")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isNoContent());
     }
 
@@ -153,5 +166,4 @@ class TrainerControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation Error"))
                 .andExpect(jsonPath("$.details").isArray());
     }
-
 }

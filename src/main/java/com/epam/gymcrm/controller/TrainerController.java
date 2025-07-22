@@ -25,24 +25,44 @@ public class TrainerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TrainerDto> getTrainerById(@PathVariable("id") Long id) {
+    public ResponseEntity<TrainerDto> getTrainerById(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
         return ResponseEntity.ok(trainerService.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<TrainerDto>> getAllTrainers() {
+    public ResponseEntity<List<TrainerDto>> getAllTrainers(
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
         return ResponseEntity.ok(trainerService.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTrainer(@PathVariable("id") Long id, @RequestBody @Valid TrainerDto trainerDto) {
+    public ResponseEntity<Void> updateTrainer(
+            @PathVariable("id") Long id,
+            @RequestBody @Valid TrainerDto trainerDto,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
         trainerDto.setId(id);
         trainerService.update(trainerDto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainer(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteTrainer(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
         trainerService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

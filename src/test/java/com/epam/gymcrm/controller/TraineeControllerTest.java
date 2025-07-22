@@ -2,7 +2,7 @@ package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
-import com.epam.gymcrm.exception.TraineeNotFoundException;
+import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.service.TraineeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,6 +45,14 @@ class TraineeControllerTest {
                 .build();
     }
 
+    // Helper for adding headers
+    private static final String USERNAME = "John.Doe";
+    private static final String PASSWORD = "password123";
+
+    private static final String INVALID_USERNAME = "invalid.user";
+    private static final String INVALID_PASSWORD = "invalid.pass";
+
+    // CREATE (no auth header required)
     @Test
     void shouldCreateTrainee() throws Exception {
         TraineeDto request = new TraineeDto();
@@ -58,20 +65,21 @@ class TraineeControllerTest {
         response.setId(1L);
         response.setFirstName("John");
         response.setLastName("Doe");
-        response.setUsername("John.Doe");
+        response.setUsername(USERNAME);
         response.setDateOfBirth("1990-01-01");
         response.setAddress("Some Address");
 
-        Mockito.when(traineeService.createTrainee(Mockito.any(TraineeDto.class))).thenReturn(response);
+        when(traineeService.createTrainee(any(TraineeDto.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/trainees")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.username").value("John.Doe"));
+                .andExpect(jsonPath("$.username").value(USERNAME));
     }
 
+    // GET BY ID
     @Test
     void shouldGetTraineeById() throws Exception {
         TraineeDto response = new TraineeDto();
@@ -80,27 +88,31 @@ class TraineeControllerTest {
         response.setLastName("Smith");
         response.setUsername("Jane.Smith");
 
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
         when(traineeService.findById(2L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/trainees/2"))
+        mockMvc.perform(get("/api/v1/trainees/2")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(2))
                 .andExpect(jsonPath("$.username").value("Jane.Smith"));
     }
 
+    // GET BY ID - Invalid Credentials
     @Test
-    void shouldReturnNotFoundWhenTraineeNotFound() throws Exception {
-        Long notFoundId = 999L;
-        when(traineeService.findById(notFoundId))
-                .thenThrow(new TraineeNotFoundException("Trainee not found with id: " + notFoundId));
+    void shouldReturnUnauthorizedWhenCredentialsInvalid() throws Exception {
+        when(traineeService.isTraineeCredentialsValid(INVALID_USERNAME, INVALID_PASSWORD))
+                .thenThrow(new InvalidCredentialsException("Invalid credentials"));
 
-        mockMvc.perform(get("/api/v1/trainees/" + notFoundId))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Trainee Not Found"))
-                .andExpect(jsonPath("$.message").value("Trainee not found with id: " + notFoundId));
+        mockMvc.perform(get("/api/v1/trainees/2")
+                        .header("X-Username", INVALID_USERNAME)
+                        .header("X-Password", INVALID_PASSWORD))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid Credentials"));
     }
 
+    // GET ALL
     @Test
     void shouldGetAllTrainees() throws Exception {
         TraineeDto t1 = new TraineeDto();
@@ -110,13 +122,17 @@ class TraineeControllerTest {
         t2.setId(2L);
         t2.setUsername("Jane.Smith");
 
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
         when(traineeService.findAll()).thenReturn(List.of(t1, t2));
 
-        mockMvc.perform(get("/api/v1/trainees"))
+        mockMvc.perform(get("/api/v1/trainees")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
+    // UPDATE
     @Test
     void shouldUpdateTrainee() throws Exception {
         TraineeDto request = new TraineeDto();
@@ -125,26 +141,34 @@ class TraineeControllerTest {
         request.setDateOfBirth("1990-01-01");
         request.setAddress("Some Address");
 
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
         doNothing().when(traineeService).update(any(TraineeDto.class));
 
         mockMvc.perform(put("/api/v1/trainees/5")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
     }
 
+    // DELETE
     @Test
     void shouldDeleteTrainee() throws Exception {
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
         doNothing().when(traineeService).deleteById(3L);
 
-        mockMvc.perform(delete("/api/v1/trainees/3"))
+        mockMvc.perform(delete("/api/v1/trainees/3")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
                 .andExpect(status().isNoContent());
     }
 
+    // BAD REQUEST (Validation error, still create endpoint so no header)
     @Test
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
         TraineeDto invalidRequest = new TraineeDto();
-        invalidRequest.setFirstName("John");
+        invalidRequest.setFirstName("John"); // Missing required fields
 
         mockMvc.perform(post("/api/v1/trainees")
                         .contentType(MediaType.APPLICATION_JSON)

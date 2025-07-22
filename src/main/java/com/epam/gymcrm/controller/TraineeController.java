@@ -25,24 +25,44 @@ public class TraineeController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<TraineeDto> getTraineeById(@PathVariable("id") Long id) {
+    public ResponseEntity<TraineeDto> getTraineeById(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
         return ResponseEntity.ok(traineeService.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<TraineeDto>> getAllTrainees() {
+    public ResponseEntity<List<TraineeDto>> getAllTrainees(
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
         return ResponseEntity.ok(traineeService.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTrainee(@PathVariable("id") Long id, @RequestBody @Valid TraineeDto traineeDto) {
+    public ResponseEntity<Void> updateTrainee(
+            @PathVariable("id") Long id,
+            @RequestBody @Valid TraineeDto traineeDto,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
         traineeDto.setId(id);
         traineeService.update(traineeDto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainee(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteTrainee(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
         traineeService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
