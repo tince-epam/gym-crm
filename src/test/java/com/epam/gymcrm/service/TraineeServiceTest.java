@@ -190,4 +190,29 @@ class TraineeServiceTest {
         assertThrows(InvalidCredentialsException.class, () ->
                 traineeService.isTraineeCredentialsValid("user1", "wrong_pw"));
     }
+
+    @Test
+    void shouldReturnTraineeDtoWhenUsernameExists() {
+        Trainee trainee = new Trainee();
+        trainee.setId(1L);
+        User user = new User();
+        user.setUsername("jane.smith");
+        trainee.setUser(user);
+
+        when(traineeRepository.findByUserUsername("jane.smith")).thenReturn(Optional.of(trainee));
+
+        TraineeDto result = traineeService.findByUsername("jane.smith");
+
+        assertNotNull(result);
+        assertEquals("jane.smith", result.getUsername());
+        verify(traineeRepository).findByUserUsername("jane.smith");
+    }
+
+    @Test
+    void shouldThrowTraineeNotFoundExceptionWhenUsernameNotExists() {
+        when(traineeRepository.findByUserUsername("nouser")).thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.findByUsername("nouser"));
+        verify(traineeRepository).findByUserUsername("nouser");
+    }
 }

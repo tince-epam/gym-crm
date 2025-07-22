@@ -66,7 +66,7 @@ public class TraineeService {
                     logger.warn("Trainee not found for id: {}", id);
                     return new TraineeNotFoundException("Trainee not found with id: " + id);
                 });
-        logger.info("Trainee found: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
+        logger.info("Trainee found by Id: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
         return TraineeMapper.toTraineeDto(trainee);
     }
 
@@ -160,5 +160,16 @@ public class TraineeService {
 
         logger.info("Login success: Trainee '{}' authenticated successfully.", username);
         return Boolean.TRUE;
+    }
+
+    public TraineeDto findByUsername(String username) {
+        logger.info("Finding trainee by username: {}", username);
+        Trainee trainee = traineeRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee not found with username: {}", username);
+                    return new TraineeNotFoundException("Trainee not found with username: " + username);
+                });
+        logger.info("Trainee found by username: id={}, username={}", trainee.getId(), trainee.getUser().getUsername());
+        return TraineeMapper.toTraineeDto(trainee);
     }
 }
