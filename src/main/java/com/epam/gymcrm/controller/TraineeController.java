@@ -88,4 +88,27 @@ public class TraineeController {
         traineeService.changeTraineePassword(username, password, passwordChangeRequest.getNewPassword());
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<Void> activateTrainee(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
+        traineeService.activateTrainee(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivateTrainee(
+            @PathVariable("id") Long id,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
+        traineeService.deactivateTrainee(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -262,4 +262,78 @@ class TraineeServiceTest {
         );
         verify(traineeRepository, never()).save(any());
     }
+
+    @Test
+    void shouldActivateTraineeWhenInactive() {
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setActive(false);
+        trainee.setUser(user);
+
+        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        traineeService.activateTrainee(1L);
+
+        assertTrue(trainee.getUser().getActive());
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void shouldThrowWhenActivatingAlreadyActiveTrainee() {
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setActive(true);
+        trainee.setUser(user);
+
+        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
+
+        assertThrows(IllegalStateException.class, () -> traineeService.activateTrainee(1L));
+        verify(traineeRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowWhenActivatingNotFoundTrainee() {
+        when(traineeRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.activateTrainee(1L));
+        verify(traineeRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldDeactivateTraineeWhenActive() {
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setActive(true);
+        trainee.setUser(user);
+
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        traineeService.deactivateTrainee(2L);
+
+        assertFalse(trainee.getUser().getActive());
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void shouldThrowWhenDeactivatingAlreadyInactiveTrainee() {
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setActive(false);
+        trainee.setUser(user);
+
+        when(traineeRepository.findById(2L)).thenReturn(Optional.of(trainee));
+
+        assertThrows(IllegalStateException.class, () -> traineeService.deactivateTrainee(2L));
+        verify(traineeRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowWhenDeactivatingNotFoundTrainee() {
+        when(traineeRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.deactivateTrainee(2L));
+        verify(traineeRepository, never()).save(any());
+    }
 }

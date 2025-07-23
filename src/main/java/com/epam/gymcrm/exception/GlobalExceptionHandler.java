@@ -95,6 +95,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Invalid Operation",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
         ErrorResponse error = new ErrorResponse(
