@@ -1,6 +1,7 @@
 package com.epam.gymcrm.specification;
 
 import com.epam.gymcrm.domain.Training;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -27,10 +28,14 @@ public class TrainingSpecification {
                 trainerName == null ? null : cb.equal(root.get("trainer").get("user").get("firstName"), trainerName);
     }
 
-    public static Specification<Training> trainingType(String trainingType) {
-        return (root, query, cb) ->
-                trainingType == null ? null : cb.equal(root.get("type"), trainingType);
+    public static Specification<Training> trainingType(String trainingTypeName) {
+        return (root, query, cb) -> {
+            if (trainingTypeName == null) return null;
+            Join<Object, Object> trainingTypeJoin = root.join("trainingType");
+            return cb.equal(trainingTypeJoin.get("trainingTypeName"), trainingTypeName);
+        };
     }
+
 
     public static Specification<Training> traineeName(String name) {
         return (root, query, cb) ->

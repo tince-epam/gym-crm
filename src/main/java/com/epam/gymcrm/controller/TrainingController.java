@@ -45,12 +45,6 @@ public class TrainingController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTraining(@PathVariable("id") Long id) {
-        trainingService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/trainee/search")
     public ResponseEntity<List<TrainingDto>> getTraineeTrainings(
             @RequestParam(name = "username") String username,

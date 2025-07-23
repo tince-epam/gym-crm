@@ -105,18 +105,6 @@ public class TrainingService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        logger.info("Deleting training with id: {}", id);
-        Training training = trainingRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn("Training not found for delete operation with id: {}", id);
-                    return new TrainingNotFoundException("Training not found for delete operation with id: " + id);
-                });
-        trainingRepository.delete(training);
-        logger.info("Training deleted: id={}", id);
-    }
-
-    @Transactional
     public void update(TrainingDto dto) {
         Long id = dto.getId();
         Training existing = trainingRepository.findById(id)

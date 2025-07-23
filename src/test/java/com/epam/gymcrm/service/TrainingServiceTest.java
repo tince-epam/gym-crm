@@ -155,20 +155,6 @@ class TrainingServiceTest {
     }
 
     @Test
-    void shouldDeleteTraining() {
-        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
-        doNothing().when(trainingRepository).delete(training);
-        trainingService.deleteById(1L);
-        verify(trainingRepository).delete(training);
-    }
-
-    @Test
-    void shouldThrowWhenDeleteByIdIfTrainingNotFound() {
-        when(trainingRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(TrainingNotFoundException.class, () -> trainingService.deleteById(99L));
-    }
-
-    @Test
     void shouldUpdateTraining() {
         TrainingDto updateDto = new TrainingDto();
         updateDto.setId(1L);

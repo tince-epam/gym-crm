@@ -137,14 +137,6 @@ class TrainingControllerTest {
     }
 
     @Test
-    void shouldDeleteTraining() throws Exception {
-        doNothing().when(trainingService).deleteById(3L);
-
-        mockMvc.perform(delete("/api/v1/trainings/3"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
         TrainingDto invalidRequest = new TrainingDto();
 
