@@ -2,6 +2,7 @@ package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.PasswordChangeRequestDto;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.dto.UpdateTraineeTrainersRequest;
 import com.epam.gymcrm.service.TraineeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -108,6 +109,18 @@ public class TraineeController {
     ) {
         traineeService.isTraineeCredentialsValid(authUsername, authPassword);
         traineeService.deleteTraineeByUsername(username);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/trainers")
+    public ResponseEntity<Void> updateTraineeTrainers(
+            @PathVariable("id") Long traineeId,
+            @RequestBody UpdateTraineeTrainersRequest request,
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password
+    ) {
+        traineeService.isTraineeCredentialsValid(username, password);
+        traineeService.updateTraineeTrainers(traineeId, request);
         return ResponseEntity.noContent().build();
     }
 

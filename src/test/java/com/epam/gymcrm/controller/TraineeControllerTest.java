@@ -1,6 +1,7 @@
 package com.epam.gymcrm.controller;
 
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.dto.UpdateTraineeTrainersRequest;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
@@ -347,6 +348,47 @@ class TraineeControllerTest {
 
         verify(traineeService).isTraineeCredentialsValid(USERNAME, PASSWORD);
         verify(traineeService).deleteTraineeByUsername(username);
+    }
+
+    @Test
+    void shouldUpdateTraineeTrainersSuccessfully() throws Exception {
+        Long traineeId = 1L;
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest();
+        request.setTrainerIds(List.of(10L, 20L));
+
+        when(traineeService.isTraineeCredentialsValid("test.user", "testpass")).thenReturn(true);
+        doNothing().when(traineeService).updateTraineeTrainers(eq(traineeId), any(UpdateTraineeTrainersRequest.class));
+
+        mockMvc.perform(patch("/api/v1/trainees/{id}/trainers", traineeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-Username", "test.user")
+                        .header("X-Password", "testpass"))
+                .andExpect(status().isNoContent());
+
+        verify(traineeService).isTraineeCredentialsValid("test.user", "testpass");
+        verify(traineeService).updateTraineeTrainers(eq(traineeId), any(UpdateTraineeTrainersRequest.class));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTraineeDoesNotExist() throws Exception {
+        Long traineeId = 42L;
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest();
+        request.setTrainerIds(List.of(999L));
+
+        when(traineeService.isTraineeCredentialsValid("test.user", "testpass")).thenReturn(true);
+        doThrow(new TraineeNotFoundException("Trainee not found")).when(traineeService)
+                .updateTraineeTrainers(eq(traineeId), any(UpdateTraineeTrainersRequest.class));
+
+        mockMvc.perform(patch("/api/v1/trainees/{id}/trainers", traineeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-Username", "test.user")
+                        .header("X-Password", "testpass"))
+                .andExpect(status().isNotFound());
+
+        verify(traineeService).isTraineeCredentialsValid("test.user", "testpass");
+        verify(traineeService).updateTraineeTrainers(eq(traineeId), any(UpdateTraineeTrainersRequest.class));
     }
 
 }

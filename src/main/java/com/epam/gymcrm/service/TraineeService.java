@@ -4,8 +4,10 @@ import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.dto.UpdateTraineeTrainersRequest;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
+import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
 import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;
@@ -246,5 +248,22 @@ public class TraineeService {
                 });
         traineeRepository.delete(trainee);
         logger.info("Trainee deleted successfully. username={}", username);
+    }
+
+    @Transactional
+    public void updateTraineeTrainers(Long traineeId, UpdateTraineeTrainersRequest request) {
+        logger.info("Updating trainers for trainee: id={}, newTrainers={}", traineeId, request.getTrainerIds());
+
+        Trainee trainee = traineeRepository.findByIdWithTrainers(traineeId)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee to update trainers not found: id={}", traineeId);
+                    return new TraineeNotFoundException("Trainee not found with id: " + traineeId);
+                });
+
+        Set<Trainer> trainers = new HashSet<>(trainerRepository.findAllById(request.getTrainerIds()));
+        trainee.setTrainers(trainers);
+
+        traineeRepository.save(trainee);
+        logger.info("Updated trainers for trainee: id={}", traineeId);
     }
 }

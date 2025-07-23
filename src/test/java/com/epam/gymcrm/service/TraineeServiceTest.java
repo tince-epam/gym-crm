@@ -1,8 +1,10 @@
 package com.epam.gymcrm.service;
 
 import com.epam.gymcrm.domain.Trainee;
+import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TraineeDto;
+import com.epam.gymcrm.dto.UpdateTraineeTrainersRequest;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.repository.TraineeRepository;
@@ -16,8 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -357,6 +361,60 @@ class TraineeServiceTest {
         assertThrows(TraineeNotFoundException.class, () -> traineeService.deleteTraineeByUsername(username));
         verify(traineeRepository).findByUserUsername(username);
         verify(traineeRepository, never()).delete(any());
+    }
+
+    @Test
+    void shouldUpdateTraineeTrainers() {
+        Long traineeId = 1L;
+        Trainee trainee = new Trainee();
+        Trainer trainer1 = new Trainer(); trainer1.setId(10L);
+        Trainer trainer2 = new Trainer(); trainer2.setId(20L);
+        List<Long> trainerIds = List.of(10L, 20L);
+
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest();
+        request.setTrainerIds(trainerIds);
+
+        when(traineeRepository.findByIdWithTrainers(traineeId)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllById(trainerIds)).thenReturn(List.of(trainer1, trainer2));
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        traineeService.updateTraineeTrainers(traineeId, request);
+
+        assertEquals(2, trainee.getTrainers().size(), "Trainee's trainers set should be updated");
+        assertTrue(trainee.getTrainers().contains(trainer1));
+        assertTrue(trainee.getTrainers().contains(trainer2));
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void shouldThrowWhenTraineeNotFound() {
+        Long traineeId = 999L;
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest();
+        request.setTrainerIds(List.of(1L, 2L));
+
+        when(traineeRepository.findByIdWithTrainers(traineeId)).thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.updateTraineeTrainers(traineeId, request));
+        verify(traineeRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldClearTraineeTrainersWhenTrainerListIsEmpty() {
+        Long traineeId = 1L;
+        Trainee trainee = new Trainee();
+        Trainer trainer1 = new Trainer(); trainer1.setId(10L);
+        trainee.setTrainers(new HashSet<>(Set.of(trainer1)));
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest();
+        request.setTrainerIds(List.of());
+
+        when(traineeRepository.findByIdWithTrainers(traineeId)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllById(List.of())).thenReturn(List.of());
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        traineeService.updateTraineeTrainers(traineeId, request);
+
+        assertTrue(trainee.getTrainers().isEmpty(), "Trainee's trainers should be cleared when empty list given");
+        verify(traineeRepository).save(trainee);
     }
 
 }
