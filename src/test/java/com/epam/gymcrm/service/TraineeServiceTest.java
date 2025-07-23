@@ -86,6 +86,7 @@ class TraineeServiceTest {
     void shouldUpdateTrainee() {
         when(traineeRepository.findByIdWithTrainers(1L)).thenReturn(Optional.of(trainee));
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
 
         traineeDto.setFirstName("Mehmet");
         traineeDto.setAddress("Ankara");
@@ -97,6 +98,7 @@ class TraineeServiceTest {
         assertEquals("Ankara", trainee.getAddress());
         verify(traineeRepository).save(any(Trainee.class));
     }
+
 
     @Test
     void shouldThrowExceptionWhenUpdateTraineeNotFound() {

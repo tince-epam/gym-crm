@@ -293,4 +293,80 @@ class TrainerServiceTest {
         verify(trainerRepository, never()).save(any());
     }
 
+    @Test
+    void shouldActivateTrainerWhenInactive() {
+        Trainer trainer = new Trainer();
+        User user = new User();
+        user.setActive(false);
+        trainer.setUser(user);
+
+        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        trainerService.activateTrainer(1L);
+
+        assertTrue(trainer.getUser().getActive());
+        verify(trainerRepository).save(trainer);
+    }
+
+    @Test
+    void shouldThrowWhenActivatingAlreadyActiveTrainer() {
+        Trainer trainer = new Trainer();
+        User user = new User();
+        user.setActive(true);
+        trainer.setUser(user);
+
+        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.of(trainer));
+
+        assertThrows(IllegalStateException.class, () -> trainerService.activateTrainer(1L));
+        verify(trainerRepository, never()).save(any());
+    }
+
+
+    @Test
+    void shouldThrowWhenActivatingNotFoundTrainer() {
+        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.empty());
+
+        assertThrows(TrainerNotFoundException.class, () -> trainerService.activateTrainer(1L));
+        verify(trainerRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldDeactivateTrainerWhenActive() {
+        Trainer trainer = new Trainer();
+        User user = new User();
+        user.setActive(true);
+        trainer.setUser(user);
+
+        when(trainerRepository.findByIdWithTrainees(2L)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        trainerService.deactivateTrainer(2L);
+
+        assertFalse(trainer.getUser().getActive());
+        verify(trainerRepository).save(trainer);
+    }
+
+    @Test
+    void shouldThrowWhenDeactivatingAlreadyInactiveTrainer() {
+        Trainer trainer = new Trainer();
+        User user = new User();
+        user.setActive(false);
+        trainer.setUser(user);
+
+        when(trainerRepository.findByIdWithTrainees(2L)).thenReturn(Optional.of(trainer));
+
+        assertThrows(IllegalStateException.class, () -> trainerService.deactivateTrainer(2L));
+        verify(trainerRepository, never()).save(any());
+    }
+
+
+    @Test
+    void shouldThrowWhenDeactivatingNotFoundTrainer() {
+        when(trainerRepository.findByIdWithTrainees(2L)).thenReturn(Optional.empty());
+
+        assertThrows(TrainerNotFoundException.class, () -> trainerService.deactivateTrainer(2L));
+        verify(trainerRepository, never()).save(any());
+    }
+
 }

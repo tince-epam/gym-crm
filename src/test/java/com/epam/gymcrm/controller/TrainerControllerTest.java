@@ -247,4 +247,67 @@ class TrainerControllerTest {
         verify(trainerService, never()).changeTrainerPassword(any(), any(), any());
     }
 
+    @Test
+    void shouldActivateTrainerWhenInactive() throws Exception {
+        // Arrange
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doNothing().when(trainerService).activateTrainer(1L);
+
+        // Act & Assert
+        mockMvc.perform(patch("/api/v1/trainers/1/activate")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNoContent());
+
+        verify(trainerService).isTrainerCredentialsValid(USERNAME, PASSWORD);
+        verify(trainerService).activateTrainer(1L);
+    }
+
+    @Test
+    void shouldReturnConflictWhenActivatingAlreadyActiveTrainer() throws Exception {
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doThrow(new IllegalStateException("Trainer is already active."))
+                .when(trainerService).activateTrainer(1L);
+
+        mockMvc.perform(patch("/api/v1/trainers/1/activate")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Trainer is already active."));
+
+        verify(trainerService).isTrainerCredentialsValid(USERNAME, PASSWORD);
+        verify(trainerService).activateTrainer(1L);
+    }
+
+    @Test
+    void shouldDeactivateTrainerWhenActive() throws Exception {
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doNothing().when(trainerService).deactivateTrainer(1L);
+
+        mockMvc.perform(patch("/api/v1/trainers/1/deactivate")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNoContent());
+
+        verify(trainerService).isTrainerCredentialsValid(USERNAME, PASSWORD);
+        verify(trainerService).deactivateTrainer(1L);
+    }
+
+    @Test
+    void shouldReturnConflictWhenDeactivatingAlreadyInactiveTrainer() throws Exception {
+        when(trainerService.isTrainerCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doThrow(new IllegalStateException("Trainer is already inactive."))
+                .when(trainerService).deactivateTrainer(1L);
+
+        mockMvc.perform(patch("/api/v1/trainers/1/deactivate")
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Trainer is already inactive."));
+
+        verify(trainerService).isTrainerCredentialsValid(USERNAME, PASSWORD);
+        verify(trainerService).deactivateTrainer(1L);
+    }
+
+
 }

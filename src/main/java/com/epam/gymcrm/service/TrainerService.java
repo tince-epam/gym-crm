@@ -73,12 +73,12 @@ public class TrainerService {
                     logger.warn("Trainer to delete not found for id: {}", id);
                     return new TrainerNotFoundException("Trainer not found with id: " + id);
                 });
-        
-        for(Trainee trainee : trainer.getTrainees()) {
-        	trainee.getTrainers().remove(trainer);
+
+        for (Trainee trainee : trainer.getTrainees()) {
+            trainee.getTrainers().remove(trainer);
         }
         trainer.getTrainees().clear();
-        
+
         trainerRepository.delete(trainer);
         logger.info("Trainer deleted: id={}", id);
     }
@@ -178,5 +178,44 @@ public class TrainerService {
         // Save trainer
         trainerRepository.save(trainer);
         logger.info("Password changed successfully for trainer username: {}", username);
+    }
+
+    @Transactional
+    public void activateTrainer(Long id) {
+        logger.info("Received request to activate trainer. id={}", id);
+
+        Trainer trainer = trainerRepository.findByIdWithTrainees(id)
+                .orElseThrow(() -> {
+                    logger.warn("Cannot activate trainer. Trainer not found for activation. id={}", id);
+                    return new TrainerNotFoundException("Trainer to activate not found. id=" + id);
+                });
+
+        if (Boolean.TRUE.equals(trainer.getUser().getActive())) {
+            logger.warn("Trainer activation skipped. Trainer already active. id={}, username={}", id, trainer.getUser().getUsername());
+            throw new IllegalStateException("Trainer is already active.");
+        }
+
+        trainer.getUser().setActive(Boolean.TRUE);
+        trainerRepository.save(trainer);
+        logger.info("Trainer activated successfully. id={}, username={}", id, trainer.getUser().getUsername());
+    }
+
+    @Transactional
+    public void deactivateTrainer(Long id) {
+        logger.info("Received request to deactivate trainer. id={}", id);
+
+        Trainer trainer = trainerRepository.findByIdWithTrainees(id)
+                .orElseThrow(() -> {
+                    logger.warn("Cannot deactivate trainer. Trainer not found for deactivation. id={}", id);
+                    return new TrainerNotFoundException("Trainer to deactivate not found. id=" + id);
+                });
+
+        if (Boolean.FALSE.equals(trainer.getUser().getActive())) {
+            logger.warn("Trainer deactivation skipped. Trainer already inactive. id={}, username={}", id, trainer.getUser().getUsername());
+            throw new IllegalStateException("Trainer is already inactive.");
+        }
+        trainer.getUser().setActive(Boolean.FALSE);
+        trainerRepository.save(trainer);
+        logger.info("Trainer deactivated successfully. id={}, username={}", id, trainer.getUser().getUsername());
     }
 }
