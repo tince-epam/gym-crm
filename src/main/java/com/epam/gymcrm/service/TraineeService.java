@@ -7,7 +7,6 @@ import com.epam.gymcrm.dto.TraineeDto;
 import com.epam.gymcrm.dto.UpdateTraineeTrainersRequest;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
 import com.epam.gymcrm.exception.TraineeNotFoundException;
-import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TraineeMapper;
 import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;

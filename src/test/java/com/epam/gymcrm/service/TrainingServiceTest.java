@@ -258,6 +258,7 @@ class TrainingServiceTest {
         assertThrows(TrainerScheduleConflictException.class, () -> trainingService.update(updateDto));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void shouldReturnTrainingsByCriteria() {
         // Arrange
@@ -284,6 +285,7 @@ class TrainingServiceTest {
         verify(trainingRepository, times(1)).findAll(any(Specification.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void shouldReturnTrainerTrainingsByCriteria() {
         String trainerUsername = "jack.smith";

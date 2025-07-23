@@ -4,8 +4,6 @@ import com.epam.gymcrm.dto.TrainingTypeDto;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
 import com.epam.gymcrm.exception.TrainingTypeNotFoundException;
 import com.epam.gymcrm.service.TrainingTypeService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,8 +30,6 @@ class TrainingTypeControllerTest {
 
     @InjectMocks
     private TrainingTypeController trainingTypeController;
-
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @BeforeEach
     void setUp() {
