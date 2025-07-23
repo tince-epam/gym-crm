@@ -110,4 +110,15 @@ public class TrainerController {
         trainerService.deactivateTrainer(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/unassigned")
+    public ResponseEntity<List<TrainerDto>> getUnassignedTrainersForTrainee(
+            @RequestHeader("X-Username") String username,
+            @RequestHeader("X-Password") String password,
+            @RequestParam("traineeUsername") String traineeUsername
+    ) {
+        trainerService.isTrainerCredentialsValid(username, password);
+        List<TrainerDto> trainers = trainerService.getUnassignedTrainersForTrainee(traineeUsername);
+        return ResponseEntity.ok(trainers);
+    }
 }

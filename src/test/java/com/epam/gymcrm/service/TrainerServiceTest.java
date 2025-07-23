@@ -1,11 +1,14 @@
 package com.epam.gymcrm.service;
 
+import com.epam.gymcrm.domain.Trainee;
 import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
+import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
+import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;
 import com.epam.gymcrm.repository.UserRepository;
 import com.epam.gymcrm.util.UserUtils;
@@ -18,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +32,8 @@ class TrainerServiceTest {
 
     @Mock
     TrainerRepository trainerRepository;
+    @Mock
+    private TraineeRepository traineeRepository;
     @Mock
     UserRepository userRepository;
 
@@ -360,7 +366,6 @@ class TrainerServiceTest {
         verify(trainerRepository, never()).save(any());
     }
 
-
     @Test
     void shouldThrowWhenDeactivatingNotFoundTrainer() {
         when(trainerRepository.findByIdWithTrainees(2L)).thenReturn(Optional.empty());
@@ -369,4 +374,67 @@ class TrainerServiceTest {
         verify(trainerRepository, never()).save(any());
     }
 
+    @Test
+    void shouldReturnUnassignedTrainersForTrainee() {
+        String traineeUsername = "ali.veli";
+        Trainee trainee = new Trainee();
+
+        Trainer assignedTrainer = new Trainer();
+        assignedTrainer.setId(1L);
+        User assignedUser = new User();
+        assignedUser.setId(11L);
+        assignedUser.setFirstName("Assigned");
+        assignedUser.setLastName("Trainer");
+        assignedTrainer.setUser(assignedUser);
+
+        Trainer unassignedTrainer1 = new Trainer();
+        unassignedTrainer1.setId(2L);
+        User user2 = new User();
+        user2.setId(22L);
+        user2.setFirstName("John");
+        user2.setLastName("Doe");
+        unassignedTrainer1.setUser(user2);
+
+        Trainer unassignedTrainer2 = new Trainer();
+        unassignedTrainer2.setId(3L);
+        User user3 = new User();
+        user3.setId(33L);
+        user3.setFirstName("Jane");
+        user3.setLastName("Smith");
+        unassignedTrainer2.setUser(user3);
+
+        trainee.setTrainers(Set.of(assignedTrainer));
+
+        when(traineeRepository.findByUserUsername(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAll()).thenReturn(List.of(assignedTrainer, unassignedTrainer1, unassignedTrainer2));
+
+        List<TrainerDto> result = trainerService.getUnassignedTrainersForTrainee(traineeUsername);
+
+        assertEquals(2, result.size(), "There should be exactly 2 unassigned trainers");
+
+        List<Long> ids = result.stream()
+                .map(TrainerDto::getId)
+                .toList();
+
+        assertFalse(ids.contains(1L), "Assigned trainer with ID 1 should not be in the result");
+        assertTrue(ids.contains(2L), "Trainer with ID 2 should be in the result");
+        assertTrue(ids.contains(3L), "Trainer with ID 3 should be in the result");
+
+        verify(traineeRepository).findByUserUsername(traineeUsername);
+        verify(trainerRepository).findAll();
+    }
+
+
+    @Test
+    void shouldThrowExceptionWhenTraineeNotFound() {
+        // Arrange
+        String traineeUsername = "not.exists";
+        when(traineeRepository.findByUserUsername(traineeUsername)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TraineeNotFoundException.class,
+                () -> trainerService.getUnassignedTrainersForTrainee(traineeUsername));
+        verify(traineeRepository).findByUserUsername(traineeUsername);
+        verify(trainerRepository, never()).findAll();
+    }
 }

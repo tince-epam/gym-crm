@@ -5,8 +5,10 @@ import com.epam.gymcrm.domain.Trainer;
 import com.epam.gymcrm.domain.User;
 import com.epam.gymcrm.dto.TrainerDto;
 import com.epam.gymcrm.exception.InvalidCredentialsException;
+import com.epam.gymcrm.exception.TraineeNotFoundException;
 import com.epam.gymcrm.exception.TrainerNotFoundException;
 import com.epam.gymcrm.mapper.TrainerMapper;
+import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;
 import com.epam.gymcrm.repository.UserRepository;
 import com.epam.gymcrm.util.UserUtils;
@@ -17,18 +19,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TrainerService {
 
     private final TrainerRepository trainerRepository;
     private final UserRepository userRepository;
+    private final TraineeRepository traineeRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(TrainerService.class);
 
-    public TrainerService(TrainerRepository trainerRepository, UserRepository userRepository) {
+    public TrainerService(TrainerRepository trainerRepository, UserRepository userRepository, TraineeRepository traineeRepository) {
         this.trainerRepository = trainerRepository;
         this.userRepository = userRepository;
+        this.traineeRepository = traineeRepository;
     }
 
     @Transactional
@@ -217,5 +223,31 @@ public class TrainerService {
         trainer.getUser().setActive(Boolean.FALSE);
         trainerRepository.save(trainer);
         logger.info("Trainer deactivated successfully. id={}, username={}", id, trainer.getUser().getUsername());
+    }
+
+    public List<TrainerDto> getUnassignedTrainersForTrainee(String traineeUsername) {
+        logger.info("Request received to get unassigned trainers for trainee: username={}", traineeUsername);
+
+        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee not found when trying to get unassigned trainers. username={}", traineeUsername);
+                    return new TraineeNotFoundException("Trainee not found with username: " + traineeUsername);
+                });
+
+        Set<Long> assignedTrainerIds = trainee.getTrainers()
+                .stream()
+                .map(Trainer::getId)
+                .collect(Collectors.toSet());
+
+        List<Trainer> unassigned = trainerRepository.findAll()
+                .stream()
+                .filter(trainer -> !assignedTrainerIds.contains(trainer.getId()))
+                .toList();
+
+        logger.info("Found {} unassigned trainers for trainee '{}'", unassigned.size(), traineeUsername);
+
+        return unassigned.stream()
+                .map(TrainerMapper::toTrainerDto)
+                .toList();
     }
 }

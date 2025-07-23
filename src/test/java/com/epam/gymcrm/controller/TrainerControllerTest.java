@@ -309,5 +309,35 @@ class TrainerControllerTest {
         verify(trainerService).deactivateTrainer(1L);
     }
 
+    @Test
+    void shouldReturnUnassignedTrainersForTrainee() throws Exception {
+        String traineeUsername = "ali.veli";
+        String authUsername = "trainer.user";
+        String authPassword = "123456";
+
+        TrainerDto trainer1 = new TrainerDto();
+        trainer1.setId(2L);
+        trainer1.setFirstName("Veli");
+        TrainerDto trainer2 = new TrainerDto();
+        trainer2.setId(3L);
+        trainer2.setFirstName("Mehmet");
+
+        when(trainerService.isTrainerCredentialsValid(authUsername, authPassword)).thenReturn(true);
+        when(trainerService.getUnassignedTrainersForTrainee(traineeUsername))
+                .thenReturn(List.of(trainer1, trainer2));
+
+        mockMvc.perform(get("/api/v1/trainers/unassigned")
+                        .header("X-Username", authUsername)
+                        .header("X-Password", authPassword)
+                        .param("traineeUsername", traineeUsername)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(2))
+                .andExpect(jsonPath("$[1].id").value(3));
+
+        verify(trainerService).isTrainerCredentialsValid(authUsername, authPassword);
+        verify(trainerService).getUnassignedTrainersForTrainee(traineeUsername);
+    }
 
 }
