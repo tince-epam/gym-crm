@@ -198,21 +198,21 @@ class TraineeServiceTest {
         user.setUsername("jane.smith");
         trainee.setUser(user);
 
-        when(traineeRepository.findByUserUsername("jane.smith")).thenReturn(Optional.of(trainee));
+        when(traineeRepository.findByUserUsernameWithTrainers("jane.smith")).thenReturn(Optional.of(trainee));
 
         TraineeDto result = traineeService.findByUsername("jane.smith");
 
         assertNotNull(result);
         assertEquals("jane.smith", result.getUsername());
-        verify(traineeRepository).findByUserUsername("jane.smith");
+        verify(traineeRepository).findByUserUsernameWithTrainers("jane.smith");
     }
 
     @Test
     void shouldThrowTraineeNotFoundExceptionWhenUsernameNotExists() {
-        when(traineeRepository.findByUserUsername("nouser")).thenReturn(Optional.empty());
+        when(traineeRepository.findByUserUsernameWithTrainers("nouser")).thenReturn(Optional.empty());
 
         assertThrows(TraineeNotFoundException.class, () -> traineeService.findByUsername("nouser"));
-        verify(traineeRepository).findByUserUsername("nouser");
+        verify(traineeRepository).findByUserUsernameWithTrainers("nouser");
     }
 
     @Test

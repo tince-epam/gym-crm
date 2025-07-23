@@ -72,7 +72,7 @@ public class TraineeController {
     public ResponseEntity<Void> changeTraineePassword(
             @RequestHeader("X-Username") String username,
             @RequestHeader("X-Password") String password,
-            @RequestBody PasswordChangeRequestDto passwordChangeRequest
+            @RequestBody @Valid PasswordChangeRequestDto passwordChangeRequest
     ) {
         traineeService.isTraineeCredentialsValid(username, password);
         traineeService.changeTraineePassword(username, password, passwordChangeRequest.getNewPassword());

@@ -164,7 +164,7 @@ public class TraineeService {
 
     public TraineeDto findByUsername(String username) {
         logger.info("Request to find trainee by username received. Username: {}", username);
-        Trainee trainee = traineeRepository.findByUserUsername(username)
+        Trainee trainee = traineeRepository.findByUserUsernameWithTrainers(username)
                 .orElseThrow(() -> {
                     logger.warn("Find trainee by username failed: No trainee found with username: {}", username);
                     return new TraineeNotFoundException("Find trainee by username failed: No trainee found with username: " + username);
