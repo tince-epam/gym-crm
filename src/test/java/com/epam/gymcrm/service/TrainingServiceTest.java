@@ -283,4 +283,32 @@ class TrainingServiceTest {
 
         verify(trainingRepository, times(1)).findAll(any(Specification.class));
     }
+
+    @Test
+    void shouldReturnTrainerTrainingsByCriteria() {
+        String trainerUsername = "jack.smith";
+        LocalDate from = LocalDate.of(2024, 7, 1);
+        LocalDate to = LocalDate.of(2024, 7, 25);
+        String traineeName = "John";
+
+        Training t1 = new Training();
+        t1.setId(1L);
+        Training t2 = new Training();
+        t2.setId(2L);
+        List<Training> trainings = Arrays.asList(t1, t2);
+
+        when(trainingRepository.findAll(any(Specification.class))).thenReturn(trainings);
+
+        // Act
+        List<Training> result = trainingService.getTrainerTrainingsByCriteria(
+                trainerUsername, from, to, traineeName);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(1).getId());
+
+        verify(trainingRepository, times(1)).findAll(any(Specification.class));
+    }
 }

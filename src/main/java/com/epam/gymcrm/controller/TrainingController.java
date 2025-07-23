@@ -51,7 +51,7 @@ public class TrainingController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/search")
+    @GetMapping("/trainee/search")
     public ResponseEntity<List<TrainingDto>> getTraineeTrainings(
             @RequestParam(name = "username") String username,
             @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -69,4 +69,21 @@ public class TrainingController {
 
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/trainer/search")
+    public ResponseEntity<List<TrainingDto>> getTrainerTrainings(
+            @RequestParam(name = "username") String username,
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(name = "traineeName", required = false) String traineeName
+    ) {
+        List<Training> trainings = trainingService.getTrainerTrainingsByCriteria(
+                username, from, to, traineeName
+        );
+        List<TrainingDto> result = trainings.stream()
+                .map(TrainingMapper::toTrainingDto)
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
 }

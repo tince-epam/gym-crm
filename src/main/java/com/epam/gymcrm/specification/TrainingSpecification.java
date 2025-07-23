@@ -31,4 +31,17 @@ public class TrainingSpecification {
         return (root, query, cb) ->
                 trainingType == null ? null : cb.equal(root.get("type"), trainingType);
     }
+
+    public static Specification<Training> traineeName(String name) {
+        return (root, query, cb) ->
+                name == null ? null :
+                        cb.equal(root.get("trainee").get("user").get("firstName"), name);
+    }
+
+    public static Specification<Training> trainerUsername(String username) {
+        return (root, query, cb) ->
+                username == null ? null : cb.equal(root.get("trainer").get("user").get("username"), username);
+    }
+
+
 }

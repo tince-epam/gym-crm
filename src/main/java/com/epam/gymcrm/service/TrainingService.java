@@ -191,4 +191,18 @@ public class TrainingService {
 
         return trainingRepository.findAll(spec);
     }
+
+    public List<Training> getTrainerTrainingsByCriteria(
+            String trainerUsername,
+            LocalDate from,
+            LocalDate to,
+            String traineeName
+    ) {
+        Specification<Training> spec = TrainingSpecification.trainerUsername(trainerUsername)
+                .and(TrainingSpecification.fromDate(from))
+                .and(TrainingSpecification.toDate(to))
+                .and(TrainingSpecification.traineeName(traineeName));
+        return trainingRepository.findAll(spec);
+    }
+
 }

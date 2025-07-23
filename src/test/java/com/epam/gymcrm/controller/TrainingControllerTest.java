@@ -17,13 +17,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -177,7 +178,7 @@ class TrainingControllerTest {
                 eq("Cardio")
         )).thenReturn(List.of(t1, t2));
 
-        mockMvc.perform(get("/api/v1/trainings/search")
+        mockMvc.perform(get("/api/v1/trainings/trainee/search")
                         .param("username", "testuser")
                         .param("trainerName", "John Doe")
                         .param("trainingType", "Cardio")
@@ -185,6 +186,43 @@ class TrainingControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    void shouldReturnTrainerTrainingsByCriteria() throws Exception {
+        Training t1 = new Training();
+        t1.setId(1L);
+        Training t2 = new Training();
+        t2.setId(2L);
+
+        TrainingDto dto1 = new TrainingDto();
+        dto1.setId(1L);
+        TrainingDto dto2 = new TrainingDto();
+        dto2.setId(2L);
+
+        when(trainingService.getTrainerTrainingsByCriteria(
+                eq("trainer.user"),
+                eq(LocalDate.of(2024, 7, 1)),
+                eq(LocalDate.of(2024, 7, 20)),
+                eq("Ali")
+        )).thenReturn(List.of(t1, t2));
+
+        mockMvc.perform(get("/api/v1/trainings/trainer/search")
+                        .param("username", "trainer.user")
+                        .param("from", "2024-07-01")
+                        .param("to", "2024-07-20")
+                        .param("traineeName", "Ali")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(2)));
+
+        verify(trainingService).getTrainerTrainingsByCriteria(
+                "trainer.user",
+                LocalDate.of(2024, 7, 1),
+                LocalDate.of(2024, 7, 20),
+                "Ali"
+        );
     }
 
 }
