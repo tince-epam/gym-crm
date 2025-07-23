@@ -1,5 +1,6 @@
 package com.epam.gymcrm.controller;
 
+import com.epam.gymcrm.domain.Training;
 import com.epam.gymcrm.dto.TrainingDto;
 import com.epam.gymcrm.exception.GlobalExceptionHandler;
 import com.epam.gymcrm.exception.TrainingNotFoundException;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -153,6 +155,36 @@ class TrainingControllerTest {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Validation Error"))
                 .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void shouldReturnTraineeTrainingsByCriteria() throws Exception {
+        Training t1 = new Training();
+        t1.setId(1L);
+        Training t2 = new Training();
+        t2.setId(2L);
+
+        TrainingDto dto1 = new TrainingDto();
+        dto1.setId(1L);
+        TrainingDto dto2 = new TrainingDto();
+        dto2.setId(2L);
+
+        when(trainingService.getTraineeTrainingsByCriteria(
+                eq("testuser"),
+                any(),
+                any(),
+                eq("John Doe"),
+                eq("Cardio")
+        )).thenReturn(List.of(t1, t2));
+
+        mockMvc.perform(get("/api/v1/trainings/search")
+                        .param("username", "testuser")
+                        .param("trainerName", "John Doe")
+                        .param("trainingType", "Cardio")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
     }
 
 }

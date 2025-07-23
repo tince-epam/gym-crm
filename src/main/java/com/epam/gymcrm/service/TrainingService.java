@@ -11,11 +11,14 @@ import com.epam.gymcrm.repository.TraineeRepository;
 import com.epam.gymcrm.repository.TrainerRepository;
 import com.epam.gymcrm.repository.TrainingRepository;
 import com.epam.gymcrm.repository.TrainingTypeRepository;
+import com.epam.gymcrm.specification.TrainingSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,8 +74,8 @@ public class TrainingService {
 
         // Trainer schedule conflict check
         boolean isTrainerBusy = trainingRepository.findAll().stream()
-            .anyMatch(t -> t.getTrainer().getId().equals(dto.getTrainerId())
-                && t.getTrainingDate().equals(training.getTrainingDate()));
+                .anyMatch(t -> t.getTrainer().getId().equals(dto.getTrainerId())
+                        && t.getTrainingDate().equals(training.getTrainingDate()));
         if (isTrainerBusy) {
             logger.warn("Trainer {} has a schedule conflict at {}", dto.getTrainerId(), dto.getTrainingDate());
             throw new TrainerScheduleConflictException("Trainer is already assigned to another training at the same time!");
@@ -171,5 +174,21 @@ public class TrainingService {
 
         trainingRepository.save(existing);
         logger.info("Training updated: id={}, name={}", existing.getId(), existing.getTrainingName());
+    }
+
+    public List<Training> getTraineeTrainingsByCriteria(
+            String traineeUsername,
+            LocalDate from,
+            LocalDate to,
+            String trainerName,
+            String trainingType) {
+
+        Specification<Training> spec = TrainingSpecification.traineeUsername(traineeUsername)
+                .and(TrainingSpecification.fromDate(from))
+                .and(TrainingSpecification.toDate(to))
+                .and(TrainingSpecification.trainerName(trainerName))
+                .and(TrainingSpecification.trainingType(trainingType));
+
+        return trainingRepository.findAll(spec);
     }
 }

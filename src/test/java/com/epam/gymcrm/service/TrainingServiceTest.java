@@ -17,8 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -253,5 +256,31 @@ class TrainingServiceTest {
         when(trainingRepository.findAll()).thenReturn(List.of(existing, other));
 
         assertThrows(TrainerScheduleConflictException.class, () -> trainingService.update(updateDto));
+    }
+
+    @Test
+    void shouldReturnTrainingsByCriteria() {
+        // Arrange
+        String traineeUsername = "testUser";
+        LocalDate from = LocalDate.of(2024, 1, 1);
+        LocalDate to = LocalDate.of(2024, 12, 31);
+        String trainerName = "John Doe";
+        String trainingType = "Cardio";
+
+        Training t1 = new Training();
+        Training t2 = new Training();
+        List<Training> expectedTrainings = Arrays.asList(t1, t2);
+
+        when(trainingRepository.findAll(any(Specification.class))).thenReturn(expectedTrainings);
+
+        List<Training> result = trainingService.getTraineeTrainingsByCriteria(
+                traineeUsername, from, to, trainerName, trainingType
+        );
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertSame(expectedTrainings, result);
+
+        verify(trainingRepository, times(1)).findAll(any(Specification.class));
     }
 }
