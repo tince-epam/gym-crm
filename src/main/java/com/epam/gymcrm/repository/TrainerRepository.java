@@ -19,4 +19,7 @@ public interface TrainerRepository extends JpaRepository<Trainer, Long> {
     List<Trainer> findAllWithTrainees();
 
     Optional<Trainer> findByUserUsername(String username);
+
+    @Query("SELECT t FROM Trainer t LEFT JOIN FETCH t.trainees WHERE t.user.username = :username")
+    Optional<Trainer> findByUserUsernameWithTrainees(@Param("username") String username);
 }

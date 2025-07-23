@@ -21,7 +21,7 @@ public class Trainer {
     @Column(nullable = false)
     private String specialization;
 
-    @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trainer")
     private Set<Training> trainings = new HashSet<>();
 
     @ManyToMany(mappedBy = "trainers")

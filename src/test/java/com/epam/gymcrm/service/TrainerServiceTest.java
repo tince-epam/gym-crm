@@ -104,17 +104,6 @@ class TrainerServiceTest {
     }
 
     @Test
-    void shouldDeleteTrainer() {
-        when(trainerRepository.findByIdWithTrainees(1L)).thenReturn(Optional.of(trainer));
-
-        doNothing().when(trainerRepository).delete(trainer);
-
-        trainerService.deleteById(1L);
-
-        verify(trainerRepository).delete(trainer);
-    }
-
-    @Test
     void shouldReturnAllTrainers() {
         Trainer t2 = new Trainer();
         t2.setId(2L);
@@ -239,7 +228,7 @@ class TrainerServiceTest {
 
     @Test
     void shouldFindTrainerByUsername() {
-        when(trainerRepository.findByUserUsername("mehmet.yilmaz")).thenReturn(Optional.of(trainer));
+        when(trainerRepository.findByUserUsernameWithTrainees("mehmet.yilmaz")).thenReturn(Optional.of(trainer));
         TrainerDto dto = trainerService.findByUsername("mehmet.yilmaz");
         assertNotNull(dto);
         assertEquals("mehmet.yilmaz", dto.getUsername());
@@ -247,7 +236,7 @@ class TrainerServiceTest {
 
     @Test
     void shouldThrowTrainerNotFoundExceptionWhenFindByUsername() {
-        when(trainerRepository.findByUserUsername("nouser")).thenReturn(Optional.empty());
+        when(trainerRepository.findByUserUsernameWithTrainees("nouser")).thenReturn(Optional.empty());
         assertThrows(TrainerNotFoundException.class, () ->
                 trainerService.findByUsername("nouser"));
     }
@@ -405,8 +394,8 @@ class TrainerServiceTest {
 
         trainee.setTrainers(Set.of(assignedTrainer));
 
-        when(traineeRepository.findByUserUsername(traineeUsername)).thenReturn(Optional.of(trainee));
-        when(trainerRepository.findAll()).thenReturn(List.of(assignedTrainer, unassignedTrainer1, unassignedTrainer2));
+        when(traineeRepository.findByUserUsernameWithTrainers(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllWithTrainees()).thenReturn(List.of(assignedTrainer, unassignedTrainer1, unassignedTrainer2));
 
         List<TrainerDto> result = trainerService.getUnassignedTrainersForTrainee(traineeUsername);
 
@@ -420,21 +409,17 @@ class TrainerServiceTest {
         assertTrue(ids.contains(2L), "Trainer with ID 2 should be in the result");
         assertTrue(ids.contains(3L), "Trainer with ID 3 should be in the result");
 
-        verify(traineeRepository).findByUserUsername(traineeUsername);
-        verify(trainerRepository).findAll();
+        verify(traineeRepository).findByUserUsernameWithTrainers(traineeUsername);
+        verify(trainerRepository).findAllWithTrainees();
     }
-
 
     @Test
     void shouldThrowExceptionWhenTraineeNotFound() {
-        // Arrange
         String traineeUsername = "not.exists";
-        when(traineeRepository.findByUserUsername(traineeUsername)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUserUsernameWithTrainers(traineeUsername)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(TraineeNotFoundException.class,
                 () -> trainerService.getUnassignedTrainersForTrainee(traineeUsername));
-        verify(traineeRepository).findByUserUsername(traineeUsername);
-        verify(trainerRepository, never()).findAll();
+        verify(traineeRepository).findByUserUsernameWithTrainers(traineeUsername);
     }
 }

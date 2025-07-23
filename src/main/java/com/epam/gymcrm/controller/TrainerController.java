@@ -57,17 +57,6 @@ public class TrainerController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainer(
-            @PathVariable("id") Long id,
-            @RequestHeader("X-Username") String username,
-            @RequestHeader("X-Password") String password
-    ) {
-        trainerService.isTrainerCredentialsValid(username, password);
-        trainerService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/search")
     public ResponseEntity<TrainerDto> getTrainerByUsername(
             @RequestParam(name = "username") String uname,

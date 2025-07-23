@@ -72,24 +72,6 @@ public class TrainerService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        logger.info("Deleting trainer with id: {}", id);
-        Trainer trainer = trainerRepository.findByIdWithTrainees(id)
-                .orElseThrow(() -> {
-                    logger.warn("Trainer to delete not found for id: {}", id);
-                    return new TrainerNotFoundException("Trainer not found with id: " + id);
-                });
-
-        for (Trainee trainee : trainer.getTrainees()) {
-            trainee.getTrainers().remove(trainer);
-        }
-        trainer.getTrainees().clear();
-
-        trainerRepository.delete(trainer);
-        logger.info("Trainer deleted: id={}", id);
-    }
-
-    @Transactional
     public void update(TrainerDto trainerDto) {
         Long id = trainerDto.getId();
         Trainer trainer = trainerRepository.findByIdWithTrainees(id)
@@ -154,7 +136,7 @@ public class TrainerService {
 
     public TrainerDto findByUsername(String username) {
         logger.info("Finding trainer by username: {}", username);
-        Trainer trainer = trainerRepository.findByUserUsername(username)
+        Trainer trainer = trainerRepository.findByUserUsernameWithTrainees(username)
                 .orElseThrow(() -> {
                     logger.warn("Trainer not found with username: {}", username);
                     return new TrainerNotFoundException("Trainer not found with username: " + username);
@@ -228,7 +210,7 @@ public class TrainerService {
     public List<TrainerDto> getUnassignedTrainersForTrainee(String traineeUsername) {
         logger.info("Request received to get unassigned trainers for trainee: username={}", traineeUsername);
 
-        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername)
+        Trainee trainee = traineeRepository.findByUserUsernameWithTrainers(traineeUsername)
                 .orElseThrow(() -> {
                     logger.warn("Trainee not found when trying to get unassigned trainers. username={}", traineeUsername);
                     return new TraineeNotFoundException("Trainee not found with username: " + traineeUsername);
@@ -239,7 +221,7 @@ public class TrainerService {
                 .map(Trainer::getId)
                 .collect(Collectors.toSet());
 
-        List<Trainer> unassigned = trainerRepository.findAll()
+        List<Trainer> unassigned = trainerRepository.findAllWithTrainees()
                 .stream()
                 .filter(trainer -> !assignedTrainerIds.contains(trainer.getId()))
                 .toList();

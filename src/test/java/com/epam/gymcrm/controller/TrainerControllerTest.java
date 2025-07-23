@@ -144,16 +144,6 @@ class TrainerControllerTest {
     }
 
     @Test
-    void shouldDeleteTrainer() throws Exception {
-        doNothing().when(trainerService).deleteById(7L);
-
-        mockMvc.perform(delete("/api/v1/trainers/7")
-                        .header("X-Username", USERNAME)
-                        .header("X-Password", PASSWORD))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
         TrainerDto invalidRequest = new TrainerDto();
 
