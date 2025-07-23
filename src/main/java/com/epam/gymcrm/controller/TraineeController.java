@@ -57,17 +57,6 @@ public class TraineeController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainee(
-            @PathVariable("id") Long id,
-            @RequestHeader("X-Username") String username,
-            @RequestHeader("X-Password") String password
-    ) {
-        traineeService.isTraineeCredentialsValid(username, password);
-        traineeService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/search")
     public ResponseEntity<TraineeDto> getTraineeByUsername(
             @RequestParam(name = "username") String uname,
@@ -108,6 +97,17 @@ public class TraineeController {
     ) {
         traineeService.isTraineeCredentialsValid(username, password);
         traineeService.deactivateTrainee(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteTraineeByUsername(
+            @RequestParam(name = "username") String username,
+            @RequestHeader("X-Username") String authUsername,
+            @RequestHeader("X-Password") String authPassword
+    ) {
+        traineeService.isTraineeCredentialsValid(authUsername, authPassword);
+        traineeService.deleteTraineeByUsername(username);
         return ResponseEntity.noContent().build();
     }
 

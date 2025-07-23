@@ -78,18 +78,6 @@ public class TraineeService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        logger.info("Deleting trainee with id: {}", id);
-        Trainee trainee = traineeRepository.findByIdWithTrainers(id)
-                .orElseThrow(() -> {
-                    logger.warn("Trainee to delete not found: id={}", id);
-                    return new TraineeNotFoundException("Trainee not found with id: " + id);
-                });
-        traineeRepository.delete(trainee);
-        logger.info("Trainee deleted: id={}", id);
-    }
-
-    @Transactional
     public void update(TraineeDto traineeDto) {
         Long id = traineeDto.getId();
         logger.info("Update requested for trainee. ID: {}", id);
@@ -246,5 +234,17 @@ public class TraineeService {
         trainee.getUser().setActive(Boolean.FALSE);
         traineeRepository.save(trainee);
         logger.info("Trainee deactivated successfully. id={}, username={}", id, trainee.getUser().getUsername());
+    }
+
+    @Transactional
+    public void deleteTraineeByUsername(String username) {
+        logger.info("Delete request received for trainee. username={}", username);
+        Trainee trainee = traineeRepository.findByUserUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Trainee not found for deletion. username={}", username);
+                    return new TraineeNotFoundException("Trainee not found with username: " + username);
+                });
+        traineeRepository.delete(trainee);
+        logger.info("Trainee deleted successfully. username={}", username);
     }
 }

@@ -152,18 +152,6 @@ class TraineeControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    // DELETE
-    @Test
-    void shouldDeleteTrainee() throws Exception {
-        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
-        doNothing().when(traineeService).deleteById(3L);
-
-        mockMvc.perform(delete("/api/v1/trainees/3")
-                        .header("X-Username", USERNAME)
-                        .header("X-Password", PASSWORD))
-                .andExpect(status().isNoContent());
-    }
-
     // BAD REQUEST (Validation error, still create endpoint so no header)
     @Test
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
@@ -324,4 +312,41 @@ class TraineeControllerTest {
         verify(traineeService).isTraineeCredentialsValid(USERNAME, PASSWORD);
         verify(traineeService).deactivateTrainee(10L);
     }
+
+    @Test
+    void shouldDeleteTraineeByUsername() throws Exception {
+        String username = "ali.veli";
+
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doNothing().when(traineeService).deleteTraineeByUsername(username);
+
+        mockMvc.perform(delete("/api/v1/trainees/delete")
+                        .param("username", username)
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNoContent());
+
+        verify(traineeService).isTraineeCredentialsValid(USERNAME, PASSWORD);
+        verify(traineeService).deleteTraineeByUsername(username);
+    }
+
+    @Test
+    void shouldReturn404WhenDeletingNonExistentTrainee() throws Exception {
+        String username = "nouser";
+
+        when(traineeService.isTraineeCredentialsValid(USERNAME, PASSWORD)).thenReturn(true);
+        doThrow(new TraineeNotFoundException("Trainee not found with username: " + username))
+                .when(traineeService).deleteTraineeByUsername(username);
+
+        mockMvc.perform(delete("/api/v1/trainees/delete")
+                        .param("username", username)
+                        .header("X-Username", USERNAME)
+                        .header("X-Password", PASSWORD))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Trainee not found with username: " + username));
+
+        verify(traineeService).isTraineeCredentialsValid(USERNAME, PASSWORD);
+        verify(traineeService).deleteTraineeByUsername(username);
+    }
+
 }

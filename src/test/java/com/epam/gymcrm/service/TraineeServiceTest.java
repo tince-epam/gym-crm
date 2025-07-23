@@ -126,13 +126,6 @@ class TraineeServiceTest {
     }
 
     @Test
-    void shouldDeleteTrainee() {
-        when(traineeRepository.findByIdWithTrainers(1L)).thenReturn(Optional.of(trainee));
-        traineeService.deleteById(1L);
-        verify(traineeRepository).delete(trainee);
-    }
-
-    @Test
     void shouldReturnAllTrainees() {
         Trainee t1 = trainee;
         Trainee t2 = new Trainee();
@@ -338,4 +331,32 @@ class TraineeServiceTest {
         assertThrows(TraineeNotFoundException.class, () -> traineeService.deactivateTrainee(2L));
         verify(traineeRepository, never()).save(any());
     }
+
+    @Test
+    void shouldDeleteTraineeByUsername() {
+        String username = "ali.veli";
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setUsername(username);
+        trainee.setUser(user);
+
+        when(traineeRepository.findByUserUsername(username)).thenReturn(Optional.of(trainee));
+        doNothing().when(traineeRepository).delete(trainee);
+
+        traineeService.deleteTraineeByUsername(username);
+
+        verify(traineeRepository).findByUserUsername(username);
+        verify(traineeRepository).delete(trainee);
+    }
+
+    @Test
+    void shouldThrowWhenDeletingNonExistentTrainee() {
+        String username = "nouser";
+        when(traineeRepository.findByUserUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(TraineeNotFoundException.class, () -> traineeService.deleteTraineeByUsername(username));
+        verify(traineeRepository).findByUserUsername(username);
+        verify(traineeRepository, never()).delete(any());
+    }
+
 }
